@@ -1,5 +1,8 @@
 # Muxiva Avatar — Windows 本地数字人原型
 
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+[![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933.svg)](https://nodejs.org/)
+
 这是一条真实 Muxiva Graph，不是另写的聊天循环。当前处于首轮集成与验收阶段，尚不等同成熟产品。
 
 ## 启动
@@ -58,3 +61,7 @@
 ## 已知未验收
 
 真实用户麦克风与AEC、真实模型时延的大样本统计、长稳2小时/100轮、多会话负载、工具等价迁移、最终人物资产和音色偏好，仍需后续验收。真实qwen-flash问答和本地语音/Avatar已完成小样本链路验证，详见docs/implementation-status.zh-CN.md。设备/模型故障会显式报错，不能通过静默或固定回复掩盖。
+
+## 许可证
+
+项目代码采用 [Apache License 2.0](LICENSE)。第三方模型、动作和其他资产仍遵循各自许可证；动作来源与声明见 `assets/avatar/animations/THIRD_PARTY_NOTICES.md`。本机使用的 AvatarSample A 二进制不进入仓库，其来源和限制记录在 `assets/avatar/AvatarSample_A.source.json`。

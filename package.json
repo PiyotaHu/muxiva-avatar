@@ -23,5 +23,14 @@
   },
   "devDependencies": {
     "electron": "39.2.6"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PiyotaHu/muxiva-avatar.git"
+  },
+  "homepage": "https://github.com/PiyotaHu/muxiva-avatar#readme",
+  "bugs": {
+    "url": "https://github.com/PiyotaHu/muxiva-avatar/issues"
   }
 }
