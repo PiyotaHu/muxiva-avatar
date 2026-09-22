@@ -1,0 +1,10 @@
+import * as THREE from 'three';
+const clamp=v=>Math.max(0,Math.min(1,Number.isFinite(v)?v:0));const VISEMES=['aa','ih','ou','ee','oh'];
+/** Owns facial blend shapes only; body poses and gaze are independent. */
+export class AvatarFaceController {
+  constructor({mouthScale=.8,emotions={}}={}){this.mouthScale=mouthScale;this.emotions=emotions;this.current=new Map();this.nextBlink=1.8;this.elapsed=0;this.mouthOpen=0;}
+  bind(vrm){this.vrm=vrm;this.names=new Set(vrm?.expressionManager?.expressions?.map(x=>x.expressionName)||[]);}
+  unbind(){this.reset();this.vrm=null;this.names=new Set();}
+  reset(){const manager=this.vrm?.expressionManager;const set=(name,value)=>typeof manager?.setValue==='function'&&manager.setValue(name,value);for(const name of [...VISEMES,'blink',...this.current.keys()])if(!name.startsWith('mouth:'))set(name,0);this.current.clear();this.mouthOpen=0;}
+  update({deltaSeconds=1/60,activity='idle',visemes=null,playing=false}={}){const dt=Math.min(.1,Math.max(0,Number.isFinite(deltaSeconds)?deltaSeconds:0));this.elapsed+=dt;const manager=this.vrm?.expressionManager;if(!manager)return;const profile=this.emotions?.[activity]||this.emotions?.idle||null,name=profile?.name,target=name&&this.names.has(name)?clamp(profile.weight):0;for(const key of new Set([...this.current.keys()].filter(key=>!key.startsWith('mouth:')),...(name?[name]:[]))){const value=THREE.MathUtils.damp(this.current.get(key)||0,key===name?target:0,.22,dt);this.current.set(key,value);manager.setValue(key,value);}const frame=playing&&visemes?visemes:null;let sum=0;for(const key of VISEMES){const target=frame?clamp(frame[key])*this.mouthScale:0,mouthKey=`mouth:${key}`,previous=this.current.get(mouthKey)||0,value=THREE.MathUtils.damp(previous,target,target>previous?.045:.075,dt);this.current.set(mouthKey,value);manager.setValue(key,value);sum+=value;}this.mouthOpen=clamp(sum/1.4);const blinkElapsed=this.elapsed-this.nextBlink,blink=blinkElapsed>=0&&blinkElapsed<.18?Math.sin(blinkElapsed/.18*Math.PI):0;if(blinkElapsed>=.18)this.nextBlink=this.elapsed+2.4+Math.random()*3.5;manager.setValue('blink',blink);}
+}

@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>立绘分层验收 · 本地测试</title>
+<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js"}}</script>
+<style>body{margin:0;background:#eef0ed;color:#243330;font:14px system-ui}main{max-width:1100px;margin:auto;padding:16px;display:grid;grid-template-columns:minmax(320px,1fr) 230px;gap:18px}#stage{height:calc(100vh - 32px);min-height:500px;background:#fff;border-radius:16px;overflow:hidden}canvas{display:block;width:100%;height:100%}aside{display:flex;flex-direction:column;gap:12px}h1{font-size:19px;margin:5px 0}p{line-height:1.6;margin:0}button,select{padding:10px;background:white;border:1px solid #c5ccc8;border-radius:8px;font:inherit}button:focus-visible,select:focus-visible{outline:3px solid #719d91}pre{white-space:pre-wrap;font-size:12px;line-height:1.5}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px}a{color:#38695d}@media(max-width:600px){main{grid-template-columns:1fr;padding:10px}#stage{height:70vh}aside{padding-bottom:20px}}</style></head>
+<body><main><div id="stage"><canvas id="character"></canvas></div><aside><h1>分层立绘验收</h1><p>仅运行本地渲染器。姿态按钮会推进动画并停在动作中段，便于检查接缝；不连接 Agent、不启用麦克风。</p>
+<p id="version"></p><label>取景 <select id="frame"><option value="full">全身</option><option value="portrait">近景</option></select></label>
+<label>背景 <select id="background"><option value="white">白色</option><option value="dark">深灰</option><option value="checker">棋盘</option></select></label>
+<div class="buttons"><button id="idle">自然待机</button><button id="greet">招手定格</button><button id="acknowledge">点头定格</button><button id="left">看向左边</button><button id="right">看向右边</button><button id="neutral">中立定格</button></div>
+<label><input id="reduced" type="checkbox"> 减少动态效果</label>
+<pre id="report" aria-live="polite">正在加载…</pre><a id="return" href="/?character=character-illustration-v2">返回真实语聊</a></aside></main><script type="module" src="/illustration-lab.mjs"></script></body></html>

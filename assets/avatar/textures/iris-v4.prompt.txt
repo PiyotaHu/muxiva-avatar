@@ -1,0 +1,5 @@
+Use case: precise-object-edit.
+Asset type: production 2:1 UV iris diffuse texture atlas for a 3D anime character. Image 1 is the exact existing iris atlas to edit; Image 2 is the face identity and eye-color reference only.
+Change ONLY the iris color/rendering of Image 1 to the warm low-saturation GRAY-LAVENDER / gray violet irises of the woman in Image 2. Delicate softly painted radial fibers, deep warm charcoal-violet pupils, subdued iris rings; elegant natural anime eyes, not glowing jewel eyes.
+Preserve EXACTLY the 2:1 canvas, pure black outside background, the two matching iris ellipse positions, shape, size and centers: normalized (.25,.5) and (.75,.5), ellipse radii approximately U=.107 and V=.240. Both islands identical. Keep pupil locations and scale.
+Replace the excessive neon purple bottom glow, scattered white stars/dots and enormous reflective patches with one small soft off-white highlight near the upper-right of each iris and quiet darker upper lid shading. No extra objects, no eye whites, no eyelids, no eyelashes, no face, no labels, no text, no checkerboard, no borders. This is a flat atlas for the existing UVs, NOT a picture of a pair of eyes.

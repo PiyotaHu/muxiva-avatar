@@ -1,0 +1,11 @@
+node_modules/
+.venv/
+.venv-qwen-tts/
+.env
+.models/
+.runtime/
+__pycache__/
+*.pyc
+assets/avatar/*.vrm
+benchmark-output/
+.artifacts/

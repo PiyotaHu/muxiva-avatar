@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "银紫",
+  "description": "视线跟随 · 轻触回应 · 头肩手臂与发裙联动",
+  "asset": "/assets/avatar/illustration-v2.json",
+  "renderer": {
+    "type": "illustration",
+    "framing": "full",
+    "framePadding": 1.09,
+    "pixelRatio": 1.75,
+    "mouthScale": 1.1,
+    "motion": {
+      "enabled": true,
+      "breathingAmount": 1,
+      "idleAmount": 1,
+      "speechAmount": 0.85,
+      "gestureAmount": 1,
+      "headYawAmount": 1,
+      "headTiltAmount": 1,
+      "attentionAmount": 1,
+      "activityAmount": 1,
+      "interactionAmount": 1
+    }
+  },
+  "expression": {
+    "name": "neutral",
+    "weight": 0
+  },
+  "credit": "AI 绘制分层素材 · 本地骨架与有限正面变形 · 非 Live2D / 真 3D",
+  "version": "illustration-2.0.0"
+}

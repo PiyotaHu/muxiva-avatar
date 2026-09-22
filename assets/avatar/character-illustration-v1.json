@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "name": "银紫 · 可动立绘",
+  "description": "正面 2.5D · 眨眼、口型与轻微姿态",
+  "asset": "/assets/avatar/illustration-v1.json",
+  "renderer": {
+    "type": "illustration",
+    "framing": "full",
+    "framePadding": 1.06,
+    "pixelRatio": 1.75,
+    "mouthScale": 1.1,
+    "motion": {
+      "enabled": true,
+      "breathingAmount": 0.7,
+      "idleAmount": 0.8,
+      "speechAmount": 0.8,
+      "gestureAmount": 0.85,
+      "headYawAmount": 1.2,
+      "headTiltAmount": 1.2
+    }
+  },
+  "expression": {
+    "name": "neutral",
+    "weight": 0
+  },
+  "credit": "根据用户参考图制作的 AI 立绘 · 有限正面变形，非真 3D / Live2D 绑定模型",
+  "version": "illustration-1.0.0"
+}

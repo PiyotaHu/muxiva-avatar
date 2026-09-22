@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "asset": "adult-twintail-v1.vrm",
+  "sha256": "fb66e510fa4cf2701fa41631e5361705b617e2d6d47792d393f904cff0f15f30",
+  "source": {
+    "asset": "sample.vrm",
+    "sha256": "12c2b97e95e700783a6a550dc0eee2d7880aeedccef9ae67bc4c5a2f0f2631a2",
+    "url": "https://raw.githubusercontent.com/pixiv/three-vrm/v3.5.3/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm",
+    "authors": [
+      "pixiv Inc."
+    ],
+    "copyright": "(c) 2022 pixiv Inc.",
+    "license": "https://vrm.dev/licenses/1.0/"
+  },
+  "permissions": {
+    "allowRedistribution": true,
+    "modification": "allowModificationRedistribution",
+    "avatarPermission": "everyone",
+    "commercialUsage": "corporation",
+    "creditNotation": "unnecessary"
+  },
+  "adaptation": {
+    "concept": "concepts/adult-twintail-v1.png",
+    "build": "node scripts/build-character.mjs",
+    "body": "Licensed base rig, face expressions, hands and legs retained; new hair and outfit geometry",
+    "meshes": [
+      {
+        "name": "Character / Body_00_SKIN",
+        "vertices": 5307,
+        "triangles": 3518
+      },
+      {
+        "name": "Character / Opaque charcoal stockings",
+        "vertices": 5307,
+        "triangles": 2604
+      },
+      {
+        "name": "Character / Black leather shoes",
+        "vertices": 600,
+        "triangles": 712
+      },
+      {
+        "name": "Character / Antique gold shoe hardware",
+        "vertices": 48,
+        "triangles": 24
+      },
+      {
+        "name": "Character / outfit.blouse.ivory",
+        "vertices": 2860,
+        "triangles": 5192
+      },
+      {
+        "name": "Character / outfit.cardigan.charcoal",
+        "vertices": 4455,
+        "triangles": 8448
+      },
+      {
+        "name": "Character / outfit.knit.trim",
+        "vertices": 1815,
+        "triangles": 2800
+      },
+      {
+        "name": "Character / outfit.hardware.antiqueGold",
+        "vertices": 1176,
+        "triangles": 1464
+      },
+      {
+        "name": "Character / outfit.collar.ivory",
+        "vertices": 91,
+        "triangles": 120
+      },
+      {
+        "name": "Character / outfit.ribbon.plum",
+        "vertices": 543,
+        "triangles": 872
+      },
+      {
+        "name": "Character / outfit.skirt.charcoal",
+        "vertices": 2496,
+        "triangles": 2304
+      },
+      {
+        "name": "Character / outfit.skirt.lining",
+        "vertices": 975,
+        "triangles": 1792
+      },
+      {
+        "name": "Character / hair.silverLavender",
+        "vertices": 4839,
+        "triangles": 8632
+      },
+      {
+        "name": "Character / hair.softSilver",
+        "vertices": 4689,
+        "triangles": 8268
+      },
+      {
+        "name": "Character / hair.satinHighlights",
+        "vertices": 1566,
+        "triangles": 1512
+      },
+      {
+        "name": "Character / hair.plumUnderlayers",
+        "vertices": 774,
+        "triangles": 1368
+      },
+      {
+        "name": "Character / hair.darkPlumRibbons",
+        "vertices": 2052,
+        "triangles": 3504
+      },
+      {
+        "name": "Character / hair.ribbonFoldEdges",
+        "vertices": 304,
+        "triangles": 288
+      }
+    ],
+    "springs": [
+      "hair.rightTail",
+      "hair.leftTail"
+    ]
+  }
+}

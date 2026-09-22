@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "银紫 · 双马尾",
+  "description": "成年角色 · 正面精修第三版",
+  "asset": "/assets/avatar/adult-twintail-v3.vrm",
+  "renderer": {
+    "framing": "full",
+    "framePadding": 1.06,
+    "pixelRatio": 1.75,
+    "motion": {
+      "enabled": true,
+      "breathingAmount": 0.65,
+      "idleAmount": 0.6,
+      "speechAmount": 0.75,
+      "gestureAmount": 0.6,
+      "fingerAmount": 0.7,
+      "gazeAmount": 0.5,
+      "expressionAmount": 0.16,
+      "headYawAmount": 1.2,
+      "headTiltAmount": 1.15,
+      "hipSwayAmount": 0.7,
+      "restPose": {
+        "leftLowerArm": [0, -0.45, 0.16],
+        "rightLowerArm": [0, 0.45, -0.16]
+      }
+    }
+  },
+  "expression": { "name": "portraitSmile", "weight": 0.55 },
+  "credit": "Rig/base: pixiv Inc. · 定制造型: Muxiva Avatar",
+  "version": "3.0.0"
+}

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f6f2f4">
+  <title>Muxiva · AI 语音陪伴</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/","@pixiv/three-vrm":"/vendor/three-vrm.module.js","@pixiv/three-vrm-animation":"/vendor/three-vrm-animation.module.js"}}</script>
+</head>
+<body>
+  <main>
+    <header class="page-header">
+      <div class="identity">
+        <div class="eyebrow">MUXIVA <span aria-hidden="true">/</span> AI 虚拟陪伴</div>
+        <h1 id="avatarName">加载角色中…</h1>
+        <p>一个可以慢慢说话的地方。</p>
+      </div>
+      <div class="header-actions">
+        <span id="badge">正在检查环境</span>
+        <button id="immersionToggle" type="button" aria-pressed="false">沉浸模式</button>
+        <button id="desktopPet" type="button">桌宠模式</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="stage" aria-label="虚拟角色">
+        <div class="avatar-viewport">
+          <div class="stage-top">
+            <span class="experience-state"><span class="status-dot" aria-hidden="true"></span><span id="experienceLabel" aria-live="polite">尚未连接</span></span>
+          </div>
+          <canvas id="avatar" aria-label="虚拟角色互动舞台">你的浏览器不支持角色画面；仍可使用对话。</canvas>
+        </div>
+        <div class="stage-bottom">
+          <div class="avatar-controls">
+            <label class="framing-label" for="framing">正面展示 · 取景
+              <select id="framing" disabled><option value="portrait">近景</option><option value="full">全身</option></select>
+            </label>
+            <div class="gesture-controls">
+              <button id="avatarGreet" type="button" disabled>打个招呼</button>
+              <button id="avatarAcknowledge" type="button" disabled>点头回应</button>
+            </div>
+          </div>
+          <p id="avatarStatus" class="character-status" role="alert" hidden></p>
+        </div>
+      </section>
+
+      <section class="conversation" aria-labelledby="conversationHeading">
+        <div class="section-head">
+          <div><h2 id="conversationHeading">我们的对话</h2><span id="state">尚未连接</span></div>
+          <button id="conversationToggle" type="button" aria-expanded="true" aria-controls="conversationPanel">收起对话</button>
+        </div>
+        <div id="conversationPanel" class="conversation-panel">
+          <div id="messages" role="log" aria-live="polite" aria-relevant="additions text" aria-label="对话记录">
+            <div class="welcome">
+              <span class="spark" aria-hidden="true">✦</span>
+              <h3>从你想说的开始。</h3>
+              <p>今天的小事，忽然想到的问题，<br>或是想慢慢聊开的心情。</p>
+              <p class="welcome-instruction">连接会话后，可以开启麦克风，<br>也可以直接打字。</p>
+            </div>
+          </div>
+          <div id="preview" aria-live="polite"></div>
+          <form id="compose">
+            <label class="sr-only" for="prompt">你想说的话</label>
+            <textarea id="prompt" rows="2" placeholder="想和她说些什么…" maxlength="8000"></textarea>
+            <button id="send" type="submit" disabled>发送 <span aria-hidden="true">↗</span></button>
+          </form>
+        </div>
+      </section>
+
+      <section class="session-controls" aria-label="语音会话控制">
+        <div class="microphone-summary"><span class="microphone-label">麦克风</span><span id="microphoneStatus" aria-live="polite">未开启</span></div>
+        <div class="controls">
+          <button id="connect" class="primary" type="button">连接会话</button>
+          <button id="mic" type="button" disabled>开启麦克风</button>
+          <button id="interrupt" type="button" disabled>停止回答</button>
+          <button id="disconnect" type="button" disabled>结束</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="supporting-details">
+      <details class="character-details">
+        <summary>角色与互动设置</summary>
+        <div class="detail-content">
+          <p id="avatarDescription">正在读取本地角色配置</p>
+          <p id="interactionHint" hidden>移动鼠标，她会看向你；轻触角色，会向你回应。也可以使用“打个招呼”和“点头回应”按钮。互动不需要连接会话。</p>
+          <label class="model-button" for="modelFile">更换本地 VRM <input id="modelFile" type="file" accept=".vrm"></label>
+          <p id="avatarCredit" class="character-credit"></p>
+        </div>
+      </details>
+      <details class="technical-details">
+        <summary>运行信息与隐私说明</summary>
+        <div class="detail-content">
+          <p class="render-info">画面刷新 <span id="fps">— FPS</span></p>
+          <div id="diagnostics">正在检查…</div>
+          <p class="note">麦克风由你开启，浏览器会请求权限。建议戴耳机。原始语音在本机识别；Pi Agent 的大模型服务单独配置，识别文字会发往所配置的服务。</p>
+          <p>角色跟随实际声音播放，不跟随文字到达时间。当前嘴形为音频能量驱动，并非精确中文音素识别。语音模型本地推理；每个连接运行一个独立 Muxiva Graph，默认限一个会话。</p>
+        </div>
+      </details>
+    </div>
+  </main>
+  <script type="module" src="/app.mjs"></script>
+</body>
+</html>

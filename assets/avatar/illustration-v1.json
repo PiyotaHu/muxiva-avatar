@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "kind": "illustration",
+  "name": "银紫 · 正面可动立绘",
+  "images": {
+    "neutral": "/assets/avatar/illustration-neutral-v1.png",
+    "blink": "/assets/avatar/illustration-blink-v1.png",
+    "speaking": "/assets/avatar/illustration-speaking-v1.png"
+  },
+  "size": [
+    1024,
+    1536
+  ],
+  "rig": {
+    "head": {
+      "center": [
+        0.5,
+        0.078
+      ],
+      "radius": [
+        0.148,
+        0.077
+      ],
+      "pivot": [
+        0.501,
+        0.163
+      ]
+    },
+    "leftHand": {
+      "center": [
+        0.284,
+        0.432
+      ],
+      "radius": [
+        0.1,
+        0.116
+      ],
+      "pivot": [
+        0.365,
+        0.235
+      ]
+    },
+    "rightHand": {
+      "center": [
+        0.718,
+        0.432
+      ],
+      "radius": [
+        0.1,
+        0.116
+      ],
+      "pivot": [
+        0.635,
+        0.235
+      ]
+    },
+    "bodyPivot": [
+      0.5,
+      0.336
+    ],
+    "hair": {
+      "center": [
+        0.5,
+        0.25
+      ],
+      "radius": [
+        0.4,
+        0.242
+      ]
+    },
+    "skirt": {
+      "center": [
+        0.502,
+        0.424
+      ],
+      "radius": [
+        0.24,
+        0.106
+      ]
+    },
+    "eyes": [
+      {
+        "center": [
+          0.456,
+          0.095
+        ],
+        "radius": [
+          0.039,
+          0.013
+        ]
+      },
+      {
+        "center": [
+          0.527,
+          0.085
+        ],
+        "radius": [
+          0.037,
+          0.013
+        ]
+      }
+    ],
+    "mouth": {
+      "center": [
+        0.503,
+        0.12
+      ],
+      "radius": [
+        0.029,
+        0.014
+      ]
+    }
+  }
+}

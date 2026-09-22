@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "name": "银紫 · 双马尾",
+  "description": "成年原创造型 · 本地 VRM",
+  "asset": "/assets/avatar/adult-twintail-v1.vrm",
+  "renderer": {
+    "framing": "portrait",
+    "motion": {
+      "enabled": true,
+      "breathingAmount": 0.65,
+      "idleAmount": 0.6,
+      "speechAmount": 0.75,
+      "gestureAmount": 0.6,
+      "fingerAmount": 0.7
+    }
+  },
+  "expression": {
+    "name": "happy",
+    "weight": 0.12
+  },
+  "credit": "Rig/base: pixiv Inc. · 定制造型: Muxiva Avatar",
+  "version": "1.0.0"
+}

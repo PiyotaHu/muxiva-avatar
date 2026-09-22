@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "name": "AvatarSample A",
+  "description": "VRoid Project 官方示例角色 · 本地 3D VRM",
+  "asset": "/assets/avatar/AvatarSample_A.vrm",
+  "renderer": {
+    "type": "vrm",
+    "framing": "portrait",
+    "framePadding": 1.08,
+    "pixelRatio": 1.5,
+    "mouthScale": 0.8,
+    "animation": {
+      "clips": {
+        "idle": "/assets/avatar/animations/rocketbox-idle.vrma",
+        "listening": "/assets/avatar/animations/rocketbox-listening.vrma",
+        "thinking": "/assets/avatar/animations/rocketbox-thinking.vrma",
+        "speaking": "/assets/avatar/animations/rocketbox-speaking.vrma"
+      },
+      "states": {
+        "idle": "idle",
+        "listening": "listening",
+        "thinking": "thinking",
+        "speaking": "speaking"
+      },
+      "transitionSeconds": 0.55
+    },
+    "face": {
+      "emotions": {
+        "idle": {
+          "name": "Fun",
+          "weight": 0.06
+        },
+        "listening": {
+          "name": "Fun",
+          "weight": 0.03
+        },
+        "thinking": {
+          "name": "Sorrow",
+          "weight": 0.02
+        },
+        "speaking": {
+          "name": "Fun",
+          "weight": 0.1
+        }
+      }
+    }
+  },
+  "expression": {
+    "name": "neutral",
+    "weight": 0
+  },
+  "credit": "AvatarSample A · VRoid Project / pixiv Inc.",
+  "version": "avatar-sample-a-vrma-2"
+}

@@ -1,0 +1,40 @@
+{
+  "format": "muxiva.node/v1",
+  "package_id": "pi_agent",
+  "display_name": "Persistent Pi Agent",
+  "node_type": "avatar.pi_agent",
+  "language": "typescript",
+  "factory_version": "1.0.0",
+  "kind": "transform",
+  "entrypoint": "node:PiAgentNode",
+  "category": "algorithm",
+  "capability": "agent.persistent.cancellable_streaming",
+  "summary": "Thin composition of the existing persistent Pi Agent loop with an explicitly configured model backend.",
+  "ports": [
+    { "name": "prompt_in", "direction": "input", "frame_type": "text" },
+    { "name": "signal_in", "direction": "input", "frame_type": "signal" },
+    { "name": "text_out", "direction": "output", "frame_type": "text" },
+    { "name": "event_out", "direction": "output", "frame_type": "event" }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {
+      "model_base_url": { "type": "string", "default": "", "description": "OpenAI-compatible API base, overridden by MUXIVA_MODEL_BASE_URL." },
+      "model_id": { "type": "string", "default": "", "description": "Loaded model ID, overridden by MUXIVA_MODEL_ID." },
+      "model_auth_mode": { "type": "string", "enum": ["api-key", "none"], "default": "api-key" },
+      "system_prompt": { "type": "string", "default": "You are a helpful conversational assistant. Answer accurately and naturally in the user's language." },
+      "temperature": { "type": "number", "minimum": 0, "maximum": 2, "default": 0.5 },
+      "max_tokens": { "type": "integer", "minimum": 16, "maximum": 8192, "default": 512 },
+      "context_window": { "type": "integer", "minimum": 1024, "maximum": 1048576, "default": 32768 },
+      "max_history_messages": { "type": "integer", "minimum": 2, "maximum": 200, "default": 24 },
+      "max_queue_size": { "type": "integer", "minimum": 16, "maximum": 65536, "default": 2048 },
+      "max_results_per_wakeup": { "type": "integer", "minimum": 1, "maximum": 1024, "default": 64 },
+      "agent_first_output_timeout_ms": { "type": "integer", "minimum": 1000, "maximum": 120000, "default": 30000 },
+      "agent_request_timeout_ms": { "type": "integer", "minimum": 1000, "maximum": 300000, "default": 120000 },
+      "timeout_message": { "type": "string", "default": "模型响应超时，请稍后重试。" },
+      "failure_message": { "type": "string", "default": "模型调用失败，请检查模型服务和配置。" }
+    },
+    "required": [],
+    "additionalProperties": false
+  }
+}

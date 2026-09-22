@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "银紫",
+  "description": "候选预览 · 有限头部曲面视差 · 手绘微笑与视线回应",
+  "asset": "/assets/avatar/illustration-v3.json",
+  "renderer": {
+    "type": "illustration",
+    "framing": "full",
+    "framePadding": 1.09,
+    "pixelRatio": 1.75,
+    "mouthScale": 1.1,
+    "motion": {
+      "enabled": true,
+      "breathingAmount": 1,
+      "idleAmount": 1,
+      "speechAmount": 0.85,
+      "gestureAmount": 1,
+      "headYawAmount": 1,
+      "headTiltAmount": 1,
+      "attentionAmount": 1,
+      "activityAmount": 1,
+      "interactionAmount": 1
+    }
+  },
+  "expression": {
+    "name": "neutral",
+    "weight": 0
+  },
+  "credit": "AI 辅助自制素材 · 分层骨架 / 有限正面曲面 · 非 Live2D / 完整 3D",
+  "version": "illustration-3.0.0-preview"
+}

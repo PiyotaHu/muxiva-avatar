@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "models": [
+    {
+      "id": "silero-vad",
+      "license": "MIT",
+      "target": ".models/silero_vad.onnx",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx",
+      "sha256": "9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6"
+    },
+    {
+      "id": "zipformer-small-ctc-zh-model",
+      "license": "Apache-2.0",
+      "target": ".models/asr-zh/model.onnx",
+      "url": "https://huggingface.co/csukuangfj/sherpa-onnx-streaming-zipformer-small-ctc-zh-2025-04-01/resolve/ba19bb0740dedf47a7fc30b462ff1328cff971b4/model.onnx",
+      "sha256": "965221b3f80f253b2dbbd8f309ea5fc213cfc66ad649c8c0825d678837838e91"
+    },
+    {
+      "id": "zipformer-small-ctc-zh-tokens",
+      "license": "Apache-2.0",
+      "target": ".models/asr-zh/tokens.txt",
+      "url": "https://huggingface.co/csukuangfj/sherpa-onnx-streaming-zipformer-small-ctc-zh-2025-04-01/resolve/ba19bb0740dedf47a7fc30b462ff1328cff971b4/tokens.txt",
+      "sha256": "6fed8c6c248516f38e7faa19404b57413e8ce259f1cbc1fa4aebc86eac32fdfd"
+    },
+    {
+      "id": "sensevoice-small-int8-zh-en-ja-ko-yue-2024-07-17",
+      "license": "FunASR-Model-License-1.1",
+      "target": ".models/sense-voice-2024-07-17.tar.bz2",
+      "extract": ".models",
+      "files": [
+        ".models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2024-07-17/model.int8.onnx",
+        ".models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2024-07-17/tokens.txt",
+        ".models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2024-07-17/test_wavs/en.wav"
+      ],
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2024-07-17.tar.bz2",
+      "sha256": "7d1efa2138a65b0b488df37f8b89e3d91a60676e416f515b952358d83dfd347e"
+    },
+    {
+      "id": "kokoro-int8-v1.1-zh",
+      "license": "Apache-2.0",
+      "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+      "target": ".models/kokoro-int8-multi-lang-v1_1.tar.bz2",
+      "extract": ".models",
+      "files": [
+        ".models/kokoro-int8-multi-lang-v1_1/model.int8.onnx",
+        ".models/kokoro-int8-multi-lang-v1_1/voices.bin",
+        ".models/kokoro-int8-multi-lang-v1_1/tokens.txt"
+      ],
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-int8-multi-lang-v1_1.tar.bz2",
+      "sha256": "a1e94694776049035c4f2c6529f003aaece993c76aae9a78995831c3c4dcafc6"
+    },
+    {
+      "id": "kokoro-fp32-v1.1-zh",
+      "license": "Apache-2.0",
+      "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+      "target": ".models/kokoro-multi-lang-v1_1.tar.bz2",
+      "extract": ".models",
+      "files": [
+        ".models/kokoro-multi-lang-v1_1/model.onnx",
+        ".models/kokoro-multi-lang-v1_1/voices.bin"
+      ],
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-multi-lang-v1_1.tar.bz2",
+      "sha256": "a3f4c73d043860e3fd2e5b06f36795eb81de0fc8e8de6df703245edddd87dbad"
+    },
+    {
+      "id": "melo-vits-zh-en",
+      "license": "MIT",
+      "source": "https://huggingface.co/myshell-ai/MeloTTS-Chinese",
+      "target": ".models/vits-melo-tts-zh_en.tar.bz2",
+      "extract": ".models",
+      "files": [
+        ".models/vits-melo-tts-zh_en/model.onnx",
+        ".models/vits-melo-tts-zh_en/tokens.txt"
+      ],
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-melo-tts-zh_en.tar.bz2",
+      "sha256": "e58351ed7149f290a54534538badd4077cdbe6fddc964b24d0bee870415d1514",
+      "checksum_note": "Computed after HTTPS download from the official release; older release asset has no published GitHub digest."
+    }
+  ]
+}

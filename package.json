@@ -1,0 +1,27 @@
+{
+  "name": "muxiva-avatar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "desktop-pet": "electron desktop/pet-main.mjs"
+  },
+  "dependencies": {
+    "@earendil-works/pi-ai": "0.84.1",
+    "@muxiva/agent": "link:../muxiva/bindings/agent",
+    "@pixiv/three-vrm": "3.5.3",
+    "@pixiv/three-vrm-animation": "3.5.3",
+    "@piyotahu/muxiva-pi-agent": "link:../muxiva-pi-agent",
+    "three": "0.180.0",
+    "ws": "8.18.3"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "electron": "39.2.6"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "asset": "adult-twintail-v3.vrm",
+  "sha256": "7132c108ff196c7ebafdb50a5998ca03ad161719b2020a7b2cff1505344719e8",
+  "source": {
+    "asset": "sample.vrm",
+    "sha256": "12c2b97e95e700783a6a550dc0eee2d7880aeedccef9ae67bc4c5a2f0f2631a2",
+    "url": "https://raw.githubusercontent.com/pixiv/three-vrm/v3.5.3/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm",
+    "authors": [
+      "pixiv Inc."
+    ],
+    "copyright": "(c) 2022 pixiv Inc.",
+    "license": "https://vrm.dev/licenses/1.0/"
+  },
+  "permissions": {
+    "allowRedistribution": true,
+    "modification": "allowModificationRedistribution",
+    "avatarPermission": "everyone",
+    "commercialUsage": "corporation",
+    "creditNotation": "unnecessary"
+  },
+  "adaptation": {
+    "concept": "concepts/adult-twintail-v1.png",
+    "build": "node scripts/build-character-v3.mjs",
+    "body": "Licensed base rig retained; reshaped face and morph targets, generated UV textures, fitted outfit and new hair geometry",
+    "meshes": [
+      {
+        "name": "Character / Body_00_SKIN",
+        "vertices": 5307,
+        "triangles": 3332
+      },
+      {
+        "name": "Character / stockings.warmSkinUnderlay",
+        "vertices": 5307,
+        "triangles": 2920
+      },
+      {
+        "name": "Character / stockings.sheerBlackNylon",
+        "vertices": 5307,
+        "triangles": 2920
+      },
+      {
+        "name": "Character / Black leather shoes",
+        "vertices": 600,
+        "triangles": 712
+      },
+      {
+        "name": "Character / Antique gold shoe hardware",
+        "vertices": 48,
+        "triangles": 24
+      },
+      {
+        "name": "Character / outfitV3.neckAndUpperChest",
+        "vertices": 6305,
+        "triangles": 9755
+      },
+      {
+        "name": "Character / outfitV3.blouse.ivory",
+        "vertices": 6305,
+        "triangles": 10691
+      },
+      {
+        "name": "Character / outfitV3.blouse.boundEdge",
+        "vertices": 1119,
+        "triangles": 1688
+      },
+      {
+        "name": "Character / outfitV3.cardigan.charcoal",
+        "vertices": 6903,
+        "triangles": 13248
+      },
+      {
+        "name": "Character / outfitV3.cardigan.trim",
+        "vertices": 2183,
+        "triangles": 3440
+      },
+      {
+        "name": "Character / outfitV3.ribbon.plum",
+        "vertices": 839,
+        "triangles": 1392
+      },
+      {
+        "name": "Character / outfitV3.skirt.charcoal",
+        "vertices": 7200,
+        "triangles": 8832
+      },
+      {
+        "name": "Character / outfitV3.skirt.lining",
+        "vertices": 3010,
+        "triangles": 5632
+      },
+      {
+        "name": "Character / outfitV3.hardware.gold",
+        "vertices": 96,
+        "triangles": 48
+      },
+      {
+        "name": "Character / hair.silverLavender",
+        "vertices": 4839,
+        "triangles": 8632
+      },
+      {
+        "name": "Character / hair.softSilver",
+        "vertices": 4689,
+        "triangles": 8268
+      },
+      {
+        "name": "Character / hair.satinHighlights",
+        "vertices": 1566,
+        "triangles": 1512
+      },
+      {
+        "name": "Character / hair.plumUnderlayers",
+        "vertices": 774,
+        "triangles": 1368
+      },
+      {
+        "name": "Character / hair.darkPlumRibbons",
+        "vertices": 2052,
+        "triangles": 3504
+      },
+      {
+        "name": "Character / hair.ribbonFoldEdges",
+        "vertices": 304,
+        "triangles": 288
+      }
+    ],
+    "springs": [
+      "outfitV3Skirt",
+      "hair.rightTail",
+      "hair.leftTail"
+    ]
+  }
+}

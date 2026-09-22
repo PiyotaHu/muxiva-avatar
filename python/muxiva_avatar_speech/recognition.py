@@ -1,0 +1,329 @@
+"""CPU Silero/Zipformer/SenseVoice Node; adapted from muxiva-dsh-voice (Apache-2.0).
+
+Recognition emits observations only. Interruption admission belongs to the
+application voice turn controller.
+"""
+
+from __future__ import annotations
+
+import json
+import time
+from collections import deque
+from pathlib import Path
+from typing import Any
+
+import muxiva
+
+
+class LocalSpeechNode:
+    def __init__(self, config: dict[str, Any] | None = None) -> None:
+        self.config = config or {}
+        self.sherpa = None
+        self.np = None
+        self.vad = None
+        self.recognizer = None
+        self.final_recognizer = None
+        self.stream = None
+        self.vad_buffer = None
+        self.vad_window_size = 512
+        self.vad_offset = 0
+        self.audio_history = None
+        self.audio_history_start = 0
+        self.vad_samples_accepted = 0
+        self.speaking = False
+        self.muted = False
+        self.last_partial = ""
+        self.utterance_sequence = 0
+
+    def on_prepare(self, _ctx=None) -> None:
+        try:
+            import numpy as np
+            import sherpa_onnx
+        except ImportError as error:
+            raise RuntimeError("run `python scripts/setup-speech.py` to install sherpa-onnx and numpy") from error
+        self.np = np
+        self.sherpa = sherpa_onnx
+        model_dir = Path(str(self.config.get("model_dir", ".models/asr-zh"))).resolve()
+        final_model_dir = Path(str(self.config.get(
+            "final_model_dir",
+            ".models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2024-07-17",
+        ))).resolve()
+        vad_model = Path(str(self.config.get("vad_model", ".models/silero_vad.onnx"))).resolve()
+        required = [
+            model_dir / "model.onnx",
+            model_dir / "tokens.txt",
+            final_model_dir / "model.int8.onnx",
+            final_model_dir / "tokens.txt",
+            vad_model,
+        ]
+        missing = [str(path) for path in required if not path.is_file()]
+        if missing:
+            raise RuntimeError(f"voice model files are missing: {', '.join(missing)}; run `python scripts/setup-speech.py`")
+
+        self.recognizer = sherpa_onnx.OnlineRecognizer.from_zipformer2_ctc(
+            tokens=str(model_dir / "tokens.txt"),
+            model=str(model_dir / "model.onnx"),
+            num_threads=int(self.config.get("num_threads", 2)),
+            sample_rate=16_000,
+            feature_dim=80,
+            enable_endpoint_detection=False,
+            decoding_method="greedy_search",
+            provider="cpu",
+            debug=False,
+        )
+        self.stream = self.recognizer.create_stream()
+        self.final_recognizer = sherpa_onnx.OfflineRecognizer.from_sense_voice(
+            model=str(final_model_dir / "model.int8.onnx"),
+            tokens=str(final_model_dir / "tokens.txt"),
+            num_threads=int(self.config.get("final_num_threads", 2)),
+            sample_rate=16_000,
+            feature_dim=80,
+            decoding_method="greedy_search",
+            provider="cpu",
+            language=str(self.config.get("final_language", "auto")),
+            use_itn=bool(self.config.get("final_use_itn", True)),
+            debug=False,
+        )
+
+        vad_config = sherpa_onnx.VadModelConfig()
+        vad_config.silero_vad.model = str(vad_model)
+        vad_config.silero_vad.threshold = float(self.config.get("vad_threshold", 0.75))
+        vad_config.silero_vad.min_silence_duration = float(self.config.get("min_silence_seconds", 0.8))
+        vad_config.silero_vad.min_speech_duration = float(self.config.get("min_speech_seconds", 0.2))
+        vad_config.silero_vad.max_speech_duration = float(self.config.get("max_speech_seconds", 30.0))
+        vad_config.sample_rate = 16_000
+        self.vad_window_size = vad_config.silero_vad.window_size
+        self.vad = sherpa_onnx.VoiceActivityDetector(vad_config, buffer_size_in_seconds=60)
+        self.vad_buffer = np.empty(0, dtype=np.float32)
+        self.audio_history = deque()
+
+    def on_process(self, frame, ctx) -> None:
+        if frame.sample_rate_hz != 16_000 or frame.channels != 1:
+            raise ValueError("Sherpa VAD/ASR input must be mono PCM16 at 16 kHz")
+        if self.muted:
+            ctx.increment_counter("input.audio_frames_dropped_muted")
+            return
+        samples = self.np.frombuffer(frame.data, dtype=self.np.int16).astype(self.np.float32) / 32768.0
+        ctx.increment_counter("input.audio_frames")
+        ctx.set_gauge("input.audio_peak_pcm16", int(self.np.max(self.np.abs(samples)) * 32768) if len(samples) else 0)
+        self.stream.accept_waveform(16_000, samples)
+        while self.recognizer.is_ready(self.stream):
+            self.recognizer.decode_stream(self.stream)
+        partial = self.recognizer.get_result(self.stream).strip()
+        self.vad_buffer = self.np.concatenate((self.vad_buffer, samples))
+        window = self.vad_window_size
+        while self.vad_offset + window <= len(self.vad_buffer):
+            accepted = self.vad_buffer[self.vad_offset:self.vad_offset + window]
+            self._remember_audio(accepted)
+            self.vad.accept_waveform(accepted)
+            self.vad_offset += window
+            detected = self.vad.is_speech_detected()
+            if detected and not self.speaking:
+                self.speaking = True
+                self.utterance_sequence = max(self.utterance_sequence + 1, time.monotonic_ns() // 1000)
+                self.last_partial = ""
+                ctx.increment_counter("vad.candidates")
+                self._event(ctx, "muxiva.voice.speech.started", {"active": True, "detector": "silero"}, self.utterance_sequence)
+            if self.speaking:
+                self._preview(ctx, self.utterance_sequence, partial)
+            while not self.vad.empty():
+                segment = self.vad.front
+                # `front` is backed by the VAD queue; copy before `pop`
+                # invalidates that native storage.
+                utterance = self.np.array(segment.samples, dtype=self.np.float32, copy=True)
+                utterance = self._prepend_pre_roll(int(segment.start), utterance, ctx)
+                self.vad.pop()
+                self._commit(ctx, self.utterance_sequence, utterance)
+        if self.speaking:
+            self._preview(ctx, self.utterance_sequence, partial)
+        if self.vad_offset > window * 20:
+            self.vad_buffer = self.vad_buffer[self.vad_offset - window * 4:]
+            self.vad_offset = window * 4
+
+    def on_signal(self, signal, ctx) -> None:
+        name = getattr(signal, "name", "")
+        if name not in {"muxiva.voice.microphone.muted", "muxiva.voice.microphone.unmuted"}:
+            return
+        self.muted = name.endswith(".muted")
+        self._reset_decoder(ctx, "microphone_muted" if self.muted else "microphone_unmuted")
+        ctx.increment_counter("asr.microphone_state_resets")
+        ctx.set_gauge("microphone.muted", 1 if self.muted else 0)
+
+    def _reset_decoder(self, ctx, reason: str) -> None:
+        self.vad.reset()
+        self.stream = self.recognizer.create_stream()
+        self.vad_buffer = self.np.empty(0, dtype=self.np.float32)
+        self.vad_offset = 0
+        self.audio_history = deque()
+        self.audio_history_start = 0
+        self.vad_samples_accepted = 0
+        self.speaking = False
+        self.last_partial = ""
+        ctx.publish_notification("muxiva.voice.asr.reset", {"reason": reason})
+
+    def _remember_audio(self, samples) -> None:
+        """Keep absolute VAD input history so a Final can recover word onsets."""
+
+        if len(samples) == 0:
+            return
+        chunk_start = self.vad_samples_accepted
+        self.audio_history.append((chunk_start, self.np.array(samples, dtype=self.np.float32, copy=True)))
+        self.vad_samples_accepted += len(samples)
+        pre_roll = max(0.0, float(self.config.get("pre_roll_seconds", 0.5)))
+        max_seconds = float(self.config.get("max_speech_seconds", 30.0))
+        silence = float(self.config.get("min_silence_seconds", 0.8))
+        limit = max(16_000, int((max_seconds + silence + pre_roll + 1.0) * 16_000))
+        keep_from = max(0, self.vad_samples_accepted - limit)
+        while self.audio_history and self.audio_history[0][0] + len(self.audio_history[0][1]) <= keep_from:
+            self.audio_history.popleft()
+        self.audio_history_start = self.audio_history[0][0] if self.audio_history else self.vad_samples_accepted
+
+    def _prepend_pre_roll(self, segment_start: int, utterance, ctx=None):
+        """Prepend audio before Silero's absolute start without duplicating speech."""
+
+        requested = max(0, int(float(self.config.get("pre_roll_seconds", 0.5)) * 16_000))
+        requested_start = max(0, segment_start - requested)
+        pieces = []
+        for chunk_start, chunk in self.audio_history:
+            chunk_end = chunk_start + len(chunk)
+            if chunk_end <= requested_start:
+                continue
+            if chunk_start >= segment_start:
+                break
+            begin = max(0, requested_start - chunk_start)
+            end = min(len(chunk), segment_start - chunk_start)
+            if end > begin:
+                pieces.append(chunk[begin:end])
+        candidate_samples = sum(len(piece) for piece in pieces)
+        prefix = self.np.concatenate(tuple(pieces)) if pieces else None
+        prefix = self._active_pre_roll(prefix) if prefix is not None else None
+        prefix_samples = len(prefix) if prefix is not None else 0
+        if ctx is not None:
+            ctx.set_gauge("asr.pre_roll_candidate_samples", candidate_samples)
+            ctx.set_gauge("asr.pre_roll_samples", prefix_samples)
+            ctx.set_gauge("asr.pre_roll_ms", round(prefix_samples / 16.0, 1))
+        if prefix_samples == 0:
+            return utterance
+        return self.np.concatenate((prefix, utterance))
+
+    @staticmethod
+    def _active_pre_roll(candidate):
+        """Drop leading room silence while retaining weak onset plus 100 ms pad."""
+
+        frame_size = 320  # 20 ms at 16 kHz
+        rms = []
+        for offset in range(0, len(candidate), frame_size):
+            frame = candidate[offset:offset + frame_size]
+            if len(frame) == 0:
+                continue
+            rms.append((sum(float(value) * float(value) for value in frame) / len(frame)) ** 0.5)
+        if not rms:
+            return candidate[:0]
+        peak = max(rms)
+        absolute_floor = 0.0025
+        if peak < absolute_floor:
+            return candidate[:0]
+        ordered = sorted(rms)
+        noise_floor = ordered[max(0, len(ordered) // 4 - 1)]
+        threshold = min(max(absolute_floor, noise_floor * 1.8, peak * 0.12), peak * 0.55)
+        first_active = None
+        for index, value in enumerate(rms):
+            following = rms[index + 1] if index + 1 < len(rms) else value
+            if value >= threshold and following >= threshold * 0.8:
+                first_active = index
+                break
+        if first_active is None:
+            return candidate[:0]
+        keep_frame = max(0, first_active - 5)
+        return candidate[keep_frame * frame_size:]
+
+    def _commit(self, ctx, sequence: int, utterance) -> None:
+        if not self.speaking:
+            return
+        self.speaking = False
+        self.stream.input_finished()
+        while self.recognizer.is_ready(self.stream):
+            self.recognizer.decode_stream(self.stream)
+        preview_text = self.recognizer.get_result(self.stream).strip()
+        text = preview_text
+        result = None
+        self._event(ctx, "muxiva.voice.speech.stopped", {"active": False, "detector": "silero"}, sequence)
+        started = time.monotonic_ns()
+        if len(utterance) > 0:
+            final_stream = self.final_recognizer.create_stream()
+            final_stream.accept_waveform(16_000, utterance)
+            self.final_recognizer.decode_stream(final_stream)
+            result = final_stream.result
+            text = result.text.strip() or preview_text
+        process_ms = max(0, (time.monotonic_ns() - started) // 1_000_000)
+        ctx.set_gauge("asr.final_process_ms", process_ms)
+        rejection = self._final_rejection(result, text)
+        language = self._sensevoice_tag(result, "lang")
+        event = self._sensevoice_tag(result, "event")
+        if text and rejection is None:
+            ctx.increment_counter("asr.finals")
+            ctx.emit("text_out", muxiva.TextFrame(text, sequence=sequence))
+            self._event(ctx, "muxiva.voice.transcript.completed", {
+                "text": text,
+                "recognizer": "sensevoice",
+                "language": language or str(self.config.get("final_language", "auto")),
+                "event": event or "unknown",
+                "processing_ms": process_ms,
+            }, sequence)
+        else:
+            ctx.increment_counter("asr.rejected")
+            reason = rejection or "no_text"
+            ctx.increment_counter(f"asr.rejected.{reason}")
+            self._event(ctx, "muxiva.voice.transcript.rejected", {
+                "reason": reason,
+                "detector": "silero",
+                "language": language or "unknown",
+                "event": event or "unknown",
+                "processing_ms": process_ms,
+            }, sequence)
+        self.stream = self.recognizer.create_stream()
+        self.last_partial = ""
+
+    def _preview(self, ctx, sequence: int, partial: str) -> None:
+        if not partial or partial == self.last_partial:
+            return
+        self.last_partial = partial
+        ctx.increment_counter("asr.partials")
+        ctx.emit("transcript_preview_out", muxiva.TextFrame(partial, sequence=sequence))
+        self._event(ctx, "muxiva.voice.transcript.preview", {"text": partial}, sequence)
+
+    def _final_rejection(self, result, text: str) -> str | None:
+        if not text:
+            return "no_text"
+        language = self._sensevoice_tag(result, "lang")
+        configured = self.config.get("accepted_final_languages", ["zh", "en"])
+        allowed = {str(value).lower() for value in configured} if isinstance(configured, list) else {"zh", "en"}
+        if language and language not in allowed:
+            return "unsupported_language"
+        event = self._sensevoice_tag(result, "event")
+        if event and event != "speech":
+            return "non_speech_event"
+        meaningful = sum(character.isalnum() for character in text)
+        if meaningful < int(self.config.get("min_final_chars", 1)):
+            return "too_short"
+        return None
+
+    @staticmethod
+    def _sensevoice_tag(result, attribute: str) -> str:
+        raw = str(getattr(result, attribute, "") or "").strip().lower()
+        if raw.startswith("<|") and raw.endswith("|>"):
+            return raw[2:-2]
+        return raw
+
+    @staticmethod
+    def _event(ctx, topic: str, payload: dict[str, Any], sequence: int) -> None:
+        ctx.emit("event_out", muxiva.EventFrame(
+            topic, json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
+            source="muxiva.local_speech", sequence=sequence,
+        ))
+        if topic in {"muxiva.voice.speech.started", "muxiva.voice.speech.stopped"}:
+            ctx.emit("speech_out", muxiva.EventFrame(
+                topic, json.dumps(payload, ensure_ascii=False),
+                source="muxiva.local_speech", sequence=sequence,
+            ))
+        ctx.publish_notification(topic, payload)

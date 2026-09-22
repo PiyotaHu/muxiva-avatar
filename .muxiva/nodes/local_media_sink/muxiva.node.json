@@ -1,0 +1,47 @@
+{
+  "format": "muxiva.node/v1",
+  "package_id": "local_media_sink",
+  "display_name": "local.media_sink",
+  "node_type": "local.media_sink",
+  "language": "python",
+  "factory_version": "1.0.0",
+  "kind": "sink",
+  "entrypoint": "node:LocalMediaSink",
+  "ports": [
+    {
+      "name": "audio_in",
+      "direction": "input",
+      "frame_type": "audio"
+    },
+    {
+      "name": "transcript_in",
+      "direction": "input",
+      "frame_type": "text"
+    },
+    {
+      "name": "preview_in",
+      "direction": "input",
+      "frame_type": "text"
+    },
+    {
+      "name": "response_in",
+      "direction": "input",
+      "frame_type": "text"
+    },
+    {
+      "name": "event_in",
+      "direction": "input",
+      "frame_type": "event"
+    },
+    {
+      "name": "signal_in",
+      "direction": "input",
+      "frame_type": "signal"
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  }
+}

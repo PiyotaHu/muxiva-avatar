@@ -1,0 +1,414 @@
+{
+  "schemaVersion": 1,
+  "kind": "illustration",
+  "name": "银紫 · 自制表情与正面曲面候选",
+  "images": {
+    "neutral": "/assets/avatar/illustration-neutral-v1.png",
+    "blink": "/assets/avatar/illustration-blink-v1.png",
+    "speaking": "/assets/avatar/illustration-speaking-v1.png",
+    "eyeWhite": "/assets/avatar/illustration-eye-white-v2.png",
+    "smile": "/assets/avatar/illustration-smile-v3.png"
+  },
+  "size": [
+    1024,
+    1536
+  ],
+  "rig": {
+    "face": {
+      "center": [
+        0.499,
+        0.112
+      ],
+      "radius": [
+        0.088,
+        0.055
+      ]
+    },
+    "neck": {
+      "center": [
+        0.5,
+        0.168
+      ],
+      "radius": [
+        0.06,
+        0.017
+      ]
+    },
+    "head": {
+      "center": [
+        0.5,
+        0.105
+      ],
+      "radius": [
+        0.18,
+        0.104
+      ],
+      "pivot": [
+        0.501,
+        0.163
+      ]
+    },
+    "leftHand": {
+      "center": [
+        0.284,
+        0.432
+      ],
+      "radius": [
+        0.1,
+        0.116
+      ],
+      "pivot": [
+        0.356,
+        0.191
+      ]
+    },
+    "rightHand": {
+      "center": [
+        0.718,
+        0.432
+      ],
+      "radius": [
+        0.1,
+        0.116
+      ],
+      "pivot": [
+        0.644,
+        0.191
+      ]
+    },
+    "bodyPivot": [
+      0.5,
+      0.337
+    ],
+    "hair": {
+      "center": [
+        0.5,
+        0.25
+      ],
+      "radius": [
+        0.4,
+        0.242
+      ]
+    },
+    "skirt": {
+      "center": [
+        0.502,
+        0.424
+      ],
+      "radius": [
+        0.24,
+        0.106
+      ]
+    },
+    "eyes": [
+      {
+        "center": [
+          0.456,
+          0.095
+        ],
+        "radius": [
+          0.039,
+          0.013
+        ]
+      },
+      {
+        "center": [
+          0.527,
+          0.085
+        ],
+        "radius": [
+          0.037,
+          0.013
+        ]
+      }
+    ],
+    "iris": [
+      {
+        "center": [
+          0.46,
+          0.094
+        ],
+        "radius": [
+          0.0105,
+          0.0068
+        ]
+      },
+      {
+        "center": [
+          0.53,
+          0.084
+        ],
+        "radius": [
+          0.0105,
+          0.0068
+        ]
+      }
+    ],
+    "mouth": {
+      "center": [
+        0.503,
+        0.12
+      ],
+      "radius": [
+        0.029,
+        0.014
+      ]
+    },
+    "headRelief": 0.7
+  },
+  "layers": [
+    {
+      "name": "body",
+      "image": "/assets/avatar/illustration-parts-v2.png",
+      "sourceRect": [
+        0.35805423,
+        0.02073365,
+        0.284689,
+        0.27113238
+      ],
+      "bounds": [
+        0.322,
+        0.147,
+        0.356,
+        0.202
+      ],
+      "pivot": [
+        0.5,
+        0.337
+      ],
+      "motion": "body",
+      "z": 4,
+      "chromaKey": [
+        0,
+        1,
+        0
+      ],
+      "chromaTolerance": 0.18
+    },
+    {
+      "name": "head",
+      "image": "/assets/avatar/illustration-parts-v2.png",
+      "sourceRect": [
+        0.03508772,
+        0.02950558,
+        0.28070175,
+        0.27352472
+      ],
+      "bounds": [
+        0.344,
+        0.001,
+        0.314,
+        0.207
+      ],
+      "pivot": [
+        0.501,
+        0.163
+      ],
+      "motion": "head",
+      "z": 7,
+      "chromaKey": [
+        0,
+        1,
+        0
+      ],
+      "chromaTolerance": 0.18,
+      "parent": "body",
+      "face": "original",
+      "faceSourceRect": [
+        0.344,
+        0.001,
+        0.314,
+        0.207
+      ]
+    },
+    {
+      "name": "leftHair",
+      "image": "/assets/avatar/illustration-parts-v2.png",
+      "sourceRect": [
+        0.04625199,
+        0.66507177,
+        0.2185008,
+        0.3277512
+      ],
+      "bounds": [
+        0.145,
+        0.05,
+        0.312,
+        0.44
+      ],
+      "pivot": [
+        0.413,
+        0.061
+      ],
+      "motion": "leftHair",
+      "z": 1,
+      "chromaKey": [
+        0,
+        1,
+        0
+      ],
+      "chromaTolerance": 0.18,
+      "parent": "head"
+    },
+    {
+      "name": "rightHair",
+      "image": "/assets/avatar/illustration-parts-v2.png",
+      "sourceRect": [
+        0.42424242,
+        0.66507177,
+        0.22169059,
+        0.3277512
+      ],
+      "bounds": [
+        0.543,
+        0.05,
+        0.312,
+        0.441
+      ],
+      "pivot": [
+        0.584,
+        0.061
+      ],
+      "motion": "rightHair",
+      "z": 2,
+      "chromaKey": [
+        0,
+        1,
+        0
+      ],
+      "chromaTolerance": 0.18,
+      "parent": "head"
+    },
+    {
+      "name": "legs",
+      "image": "/assets/avatar/illustration-parts-v2.png",
+      "sourceRect": [
+        0.75677831,
+        0.30861244,
+        0.13556619,
+        0.35805423
+      ],
+      "bounds": [
+        0.348,
+        0.486,
+        0.304,
+        0.508
+      ],
+      "pivot": [
+        0.5,
+        0.52
+      ],
+      "motion": "legs",
+      "z": 0,
+      "chromaKey": [
+        0,
+        1,
+        0
+      ],
+      "chromaTolerance": 0.18
+    },
+    {
+      "name": "skirt",
+      "image": "/assets/avatar/illustration-parts-v2.png",
+      "sourceRect": [
+        0.66267943,
+        0.04385965,
+        0.31897927,
+        0.24162679
+      ],
+      "bounds": [
+        0.283,
+        0.331,
+        0.436,
+        0.2
+      ],
+      "pivot": [
+        0.5,
+        0.337
+      ],
+      "motion": "skirt",
+      "z": 6,
+      "chromaKey": [
+        0,
+        1,
+        0
+      ],
+      "chromaTolerance": 0.18,
+      "parent": "body"
+    },
+    {
+      "name": "leftArm",
+      "image": "/assets/avatar/illustration-parts-v2.png",
+      "sourceRect": [
+        0.06299841,
+        0.31259968,
+        0.17065391,
+        0.34688995
+      ],
+      "bounds": [
+        0.228,
+        0.174,
+        0.164,
+        0.367
+      ],
+      "pivot": [
+        0.359,
+        0.187
+      ],
+      "motion": "leftArm",
+      "z": 3,
+      "chromaKey": [
+        0,
+        1,
+        0
+      ],
+      "chromaTolerance": 0.18,
+      "parent": "body",
+      "elbow": [
+        0.316,
+        0.303
+      ],
+      "wrist": [
+        0.267,
+        0.466
+      ]
+    },
+    {
+      "name": "rightArm",
+      "image": "/assets/avatar/illustration-parts-v2.png",
+      "sourceRect": [
+        0.4338118,
+        0.31658692,
+        0.1754386,
+        0.34290271
+      ],
+      "bounds": [
+        0.61,
+        0.176,
+        0.168,
+        0.362
+      ],
+      "pivot": [
+        0.638,
+        0.188
+      ],
+      "motion": "rightArm",
+      "z": 5,
+      "chromaKey": [
+        0,
+        1,
+        0
+      ],
+      "chromaTolerance": 0.18,
+      "parent": "body",
+      "elbow": [
+        0.684,
+        0.305
+      ],
+      "wrist": [
+        0.741,
+        0.465
+      ]
+    }
+  ]
+}

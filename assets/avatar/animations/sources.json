@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "family": "Microsoft Rocketbox female standing",
+  "rule": "Use one animation family per character; do not mix base stances.",
+  "files": [
+    {
+      "file": "rocketbox-idle.vrma",
+      "source_file": "vrma/rb-idle.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "f698f6ea045533ab7475f7d512ea76c904f4a88b6e3645256f70ae532dd79b40",
+      "bytes": 357020
+    },
+    {
+      "file": "rocketbox-listening.vrma",
+      "source_file": "vrma/rb-listen.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "e3d9fa72f0bd27cc7fb18e9bdf809de607d6d4731f18c246efd976fb12e7f153",
+      "bytes": 293576
+    },
+    {
+      "file": "rocketbox-thinking.vrma",
+      "source_file": "vrma/rb-think.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "bde19e90366f644888b145d0339c172763e919dd58c72239a5856761fd9983ea",
+      "bytes": 342212
+    },
+    {
+      "file": "rocketbox-speaking.vrma",
+      "source_file": "vrma/rb-idle-talking.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "3b1c1155dfac93d4d4d3a44deecc17420cd191cbec9b68e795f19bc6d05e0e6e",
+      "bytes": 294652
+    }
+  ]
+}
