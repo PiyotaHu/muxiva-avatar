@@ -17,7 +17,7 @@ states to four compatible VRMA clips:
 
 | State | Evidence | Motion |
 | --- | --- | --- |
-| `idle` | no active user speech, model work, or playback | breathing idle |
+| `idle` | no active user speech, model work, or playback | user-adjusted breathing idle |
 | `listening` | `muxiva.voice.speech.started` until speech stop/transcript completion | attentive listening |
 | `thinking` | `muxiva.agent.response.started` until completion/failure | thoughtful loop |
 | `speaking` | PCM is actually being consumed by the browser audio player | conversational talking loop |
@@ -28,9 +28,30 @@ commit a turn, call the Agent, or create new turn semantics.
 
 `web/avatar-animation.mjs` is the only body-rig writer in the active VRM path.
 It crossfades the configured clips and falls back to the loaded idle if an
-optional state clip cannot load. The Rocketbox clips already contain arms,
-wrists and finger tracks, so the selected character intentionally has no
-`restPoseProfile` that would overwrite authored hand motion after the mixer.
+optional state clip cannot load. The Rocketbox clips already contain arms, wrists and finger tracks. The selected
+character therefore has no `restPoseProfile` that would overwrite authored motion
+after the mixer. Small model-specific `poseOffsets` are baked into every loaded
+clip before playback, so the mixer remains the only body-rig writer. The current
+profile leaves these offsets empty: its reviewed hand/arm adjustments are
+already authored into `avatar-sample-a-idle-refined.vrma`.
+
+The original user idle is a derivative of `rocketbox-idle.vrma`. It was
+exported from Blender after recovering the manual pose at frame 211 and applying
+the same local rotation deltas over frames 1-250 (24 fps). The original idle
+remains available for comparison. Listening, thinking and speaking keep their
+existing clips; the custom idle does not replace those states.
+
+The selected `avatar-sample-a-idle-refined.vrma` relaxes the previously straight
+fingers, removes the asymmetric thumb twist, and lowers the chin by 6 degrees.
+Arm, wrist, torso, leg and translation tracks remain byte-identical to the user
+export, as do all keyframe timestamps. The source export is not overwritten.
+Reproduce this asset with:
+
+```sh
+node scripts/refine-vrma-pose.mjs assets/avatar/animations/avatar-sample-a-idle.vrma assets/avatar/animations/avatar-sample-a-idle-refinement.json assets/avatar/animations/avatar-sample-a-idle-refined.vrma
+```
+
+This is offline asset authoring, not another runtime bone writer.
 
 The four `rocketbox-*.vrma` files come from one Microsoft Rocketbox female
 standing animation family. Do not mix base motions from another family because
@@ -44,7 +65,10 @@ MIT notice is in `animations/THIRD_PARTY_NOTICES.md`.
 derives five vowel-like weights from PCM supplied to the browser and samples
 them using the audio player's consumed sample offset. Mouth movement therefore
 starts and stops with audible playback, not with response text or packet arrival.
-The gaze controller is evaluated separately after body motion. Emotion, blink,
+Gaze targets the actual camera in world space through the VRM LookAt range maps,
+not fixed head-local yaw/pitch. The animated raw head matrix is synchronized
+before LookAt so eye contact is evaluated against the current pose, not the
+previous frame. This applies to idle, listening, thinking and speaking. Emotion, blink,
 gaze and lips are composed without letting an emotion preset take ownership of
 the viseme channels.
 

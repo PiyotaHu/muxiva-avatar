@@ -10,7 +10,8 @@ import {join} from 'node:path';
 const requests=[];
 assert.ok(!(process.argv.includes('--formatter')&&process.argv.includes('--long')),'Choose one fixture mode');
 const formatterParts=['当前温度为26.','25°C，湿度为68.','75%。访问 https://example.com/averylongreferencepaththatspansmultiplechunks 可以查看详情。'];
-const fixtureParts=process.argv.includes('--formatter')?formatterParts:[process.argv.includes('--long')?'这是一段用于检查长时间播放稳定性的本地语音。我们正在验证音频、嘴形、取消和队列是否保持同步。'.repeat(6):'你好，这是本地语音链路测试。'];
+const fixtureParts=process.argv.includes('--performance')?['太开心了，真为你高兴！我们可以慢慢聊一会儿。接下来我会陪你整理今天的计划，先完成最重要的一件事，再给自己留一点休息的时间。你也可以随时打断我，我会停下来听你说。说话的时候，表情和手势应该一起变化，而不是一直重复同一个动作。']:
+  process.argv.includes('--formatter')?formatterParts:[process.argv.includes('--long')?'这是一段用于检查长时间播放稳定性的本地语音。我们正在验证音频、嘴形、取消和队列是否保持同步。'.repeat(6):'你好，这是本地语音链路测试。'];
 const fixture=createServer(async(req,res)=>{
   assert.equal(req.headers.authorization,undefined,'Local fixture must never receive model credentials');
   let text='';for await(const chunk of req)text+=chunk;

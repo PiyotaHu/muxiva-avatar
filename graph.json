@@ -91,6 +91,7 @@
       "factory_version": "1.0.0",
       "node_config": {
         "backend": "matcha",
+        "voice_effect": {"pitch_semitones": 2, "tempo": 1.04},
         "model_dir": ".models/tts-candidates/matcha-icefall-zh-baker",
         "acoustic_model": "model-steps-3.onnx",
         "vocoder": "../vocos-22khz-univ.onnx",

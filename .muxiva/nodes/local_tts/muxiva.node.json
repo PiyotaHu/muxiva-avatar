@@ -119,6 +119,16 @@
         "minimum": 1,
         "maximum": 8
       },
+      "voice_effect": {
+        "type": "object",
+        "description": "Optional local FFmpeg Rubber Band pitch/tempo tuning before audio_out. Omit for original voice; requires an FFmpeg build with rubberband.",
+        "properties": {
+          "pitch_semitones": {"type": "number", "minimum": -6, "maximum": 6, "default": 0},
+          "tempo": {"type": "number", "minimum": 0.75, "maximum": 1.5, "default": 1},
+          "ffmpeg": {"type": "string", "minLength": 1, "description": "Executable path/name. Defaults to MUXIVA_FFMPEG or ffmpeg on PATH."}
+        },
+        "additionalProperties": false
+      },
       "pcm_chunk_ms": {
         "type": "integer",
         "default": 40,

@@ -121,6 +121,18 @@ class MatchaConfigurationTests(unittest.TestCase):
 
 
 class MatchaWorkerTests(unittest.TestCase):
+    def test_explicit_silence_setting_reaches_generation_not_only_model_config(self):
+        recorded = []
+        class Recording:
+            def generate(self, text, config, callback):
+                recorded.append((text, config.sid, config.speed, config.silence_scale, callback))
+                return "audio"
+        node = LocalTtsNode({"backend":"matcha", "silence_scale":1.0})
+        callback = lambda *args: 1
+        with patch.dict(sys.modules, {"sherpa_onnx":types.SimpleNamespace(GenerationConfig=FakeConfig)}):
+            self.assertEqual(node._generate(Recording(), "你好。", callback), "audio")
+        self.assertEqual(recorded, [("你好。", 0, 1.0, 1.0, callback)])
+
     def test_single_speaker_defaults_and_explicit_overrides(self):
         for backend, expected in (("matcha", 0), ("melo", 0), ("kokoro", 3), ("kokoro-int8", 3)):
             for override in (None, 2):

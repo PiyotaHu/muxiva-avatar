@@ -97,6 +97,25 @@ class LightTtsTests(unittest.TestCase):
         self.assertEqual(BENCH.minimum_available("zipvoice-int8"), 2 * BENCH.GIB)
         self.assertEqual(BENCH.minimum_available("matcha"), 1.5 * BENCH.GIB)
         self.assertEqual(BENCH.minimum_available("kokoro"), 1.5 * BENCH.GIB)
+        self.assertEqual(BENCH.minimum_available("vits"), 1.5 * BENCH.GIB)
+
+    def test_vits_requires_model_but_no_external_vocoder(self):
+        base = ["--backend", "vits", "--model-dir", "missing"]
+        with patch("sys.stderr"), self.assertRaises(SystemExit):
+            BENCH.parse_args(base)
+        args = BENCH.parse_args(base + ["--acoustic-model", "voice.onnx", "--speaker-id", "193"])
+        self.assertIsNone(args.vocoder)
+        self.assertEqual(args.speaker_id, 193)
+        fake_sherpa = SimpleNamespace(OfflineTtsVitsModelConfig=SimpleNamespace,
+                                     OfflineTtsModelConfig=SimpleNamespace,
+                                     OfflineTtsConfig=SimpleNamespace)
+        with patch.object(BENCH, "require_file", side_effect=lambda path: str(path)):
+            config = BENCH.build_config(fake_sherpa, args)
+        self.assertEqual(config.model.vits.model, "voice.onnx")
+        self.assertEqual(config.model.vits.dict_dir, str(args.model_dir.resolve() / "dict"))
+        self.assertEqual(config.model.provider, "cpu")
+        self.assertEqual(config.rule_fsts, "")
+        self.assertFalse(hasattr(config.model, "matcha"))
 
     def test_stop_targets_only_given_child(self):
         calls = []

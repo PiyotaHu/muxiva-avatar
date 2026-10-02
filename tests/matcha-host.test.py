@@ -169,6 +169,7 @@ class MatchaHostTests(unittest.TestCase):
         if config.get("backend") != "matcha":
             raise unittest.SkipTest("Graph does not select Matcha; do not silently test another backend")
         config["max_audio_chunks"] = 8
+        cls.voice_effect = config.get("voice_effect")
         cls.host = CheckedHost(config)
         cls.addClassCleanup(cls.host.close)
 
@@ -198,6 +199,10 @@ class MatchaHostTests(unittest.TestCase):
         completed = [item["frame"] for item in records if item.get("frame", {}).get("topic") == "muxiva.voice.tts.segment.completed"]
         self.assertEqual(len(completed), 2)
         self.assertEqual(sum(json.loads(frame["payload"])["samples"] for frame in completed), samples)
+        if self.voice_effect:
+            events = [json.loads(item["frame"]["payload"]) for item in records if item.get("frame", {}).get("topic") == "muxiva.voice.tts.started"]
+            self.assertEqual(len(events), 2)
+            self.assertTrue(all(event["voice_effect"] == {key:self.voice_effect[key] for key in ("pitch_semitones", "tempo")} for event in events))
         GUARD.print_json({"test":"real-matcha-host", "prepare_ms":self.host.prepare_ms,
                           "first_host_pcm_ms":first, "audio_seconds":round(samples / 24000, 3),
                           "output_sample_rate_hz":24000, "output_channels":1,
@@ -228,6 +233,26 @@ class MatchaHostTests(unittest.TestCase):
         self.assertFalse([item for item in records if item.get("frame", {}).get("sequence") == 200])
         GUARD.print_json({"test":"real-matcha-host-cancel", "after_cancel_sequences":[201],
                           "payload_boundary_preserved":True, "late_pcm_rejected":True})
+
+    def test_03_save_actual_node_output_for_audition(self):
+        import wave
+        text = "回来啦，今天有没有想我呀？先休息一会儿，慢慢跟我说，好不好？"
+        started = time.perf_counter()
+        records, state = self.host.text(text, 300)
+        records, first = self.host.drain(records, state, started)
+        samples = self.assert_audio_contract(records, 300)
+        directory = ROOT / ".artifacts/matcha-light-tuning"
+        directory.mkdir(parents=True, exist_ok=True)
+        with wave.open(str(directory / "production-sample.wav"), "wb") as output:
+            output.setnchannels(1)
+            output.setsampwidth(2)
+            output.setframerate(24000)
+            output.writeframes(b"".join(bytes.fromhex(frame["pcm_hex"]) for frame in audio_frames(records)))
+        report = {"text":text, "voice_effect":self.voice_effect, "first_host_pcm_ms":first,
+                  "duration_seconds":samples / 24000, "source":"actual configured LocalTtsNode/Python Host output",
+                  "loudness_normalization":False, "cloud_calls":0}
+        (directory / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+        GUARD.print_json({"test":"real-matcha-node-audition", **report})
 
 
 if __name__ == "__main__":

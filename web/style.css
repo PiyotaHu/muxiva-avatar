@@ -75,7 +75,7 @@ body[data-activity="thinking"] .status-dot { background: #ac885b; }
 body[data-activity="error"] .status-dot { background: #b26363; }
 .stage-bottom { position: relative; padding: 9px 16px; border-top: 1px solid #f0eaf1; background: #fcfafc; }
 .avatar-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-.gesture-controls { display: flex; gap: 7px; }
+.gesture-controls { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
 .gesture-controls button { min-height: 36px; padding: 7px 11px; font-size: 11px; background: transparent; border-color: transparent; }
 .framing-label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
 .framing-label select { min-height: 36px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); font-size: 11px; }

@@ -8,13 +8,24 @@
     "framing": "portrait",
     "framePadding": 1.08,
     "pixelRatio": 1.5,
-    "mouthScale": 0.8,
+    "mouthScale": 1.2,
     "animation": {
       "clips": {
-        "idle": "/assets/avatar/animations/rocketbox-idle.vrma",
+        "idle": "/assets/avatar/animations/avatar-sample-a-idle-refined.vrma",
         "listening": "/assets/avatar/animations/rocketbox-listening.vrma",
         "thinking": "/assets/avatar/animations/rocketbox-thinking.vrma",
-        "speaking": "/assets/avatar/animations/rocketbox-speaking.vrma"
+        "speaking": "/assets/avatar/animations/rocketbox-speaking.vrma",
+        "speaking2": "/assets/avatar/animations/rb-idle-talking-2.vrma",
+        "speaking3": "/assets/avatar/animations/rb-idle-talking-3.vrma",
+        "nod": "/assets/avatar/animations/rb-nod.vrma",
+        "nod2": "/assets/avatar/animations/rb-nod-2.vrma",
+        "shake": "/assets/avatar/animations/rb-shake.vrma",
+        "wave": "/assets/avatar/animations/rb-wave.vrma",
+        "happy": "/assets/avatar/animations/rb-happy.vrma",
+        "happy2": "/assets/avatar/animations/rb-happy-2.vrma",
+        "angry": "/assets/avatar/animations/rb-angry-2.vrma",
+        "laugh": "/assets/avatar/animations/rb-laugh.vrma",
+        "shrug": "/assets/avatar/animations/rb-shrug.vrma"
       },
       "states": {
         "idle": "idle",
@@ -22,33 +33,51 @@
         "thinking": "thinking",
         "speaking": "speaking"
       },
-      "transitionSeconds": 0.55
+      "transitionSeconds": 0.55,
+      "variants": {"speaking": ["speaking", "speaking2", "speaking3"]},
+      "gestures": {"greet": ["wave"], "acknowledge": ["nod", "nod2"], "happy": ["happy", "happy2"], "angry": ["angry"], "laugh": ["laugh"], "disagree": ["shake"], "shrug": ["shrug"]},
+      "variantIntervalSeconds": 7,
+      "gestureCooldownSeconds": 3,
+      "poseOffsets": {}
     },
     "face": {
       "emotions": {
         "idle": {
-          "name": "Fun",
-          "weight": 0.06
+          "name": "happy",
+          "weight": 0.16
         },
         "listening": {
-          "name": "Fun",
-          "weight": 0.03
+          "name": "happy",
+          "weight": 0.22
         },
         "thinking": {
-          "name": "Sorrow",
-          "weight": 0.02
-        },
-        "speaking": {
-          "name": "Fun",
+          "name": "happy",
           "weight": 0.1
+        },
+        "greet": {"name": "happy", "weight": 0.4},
+        "acknowledge": {"name": "happy", "weight": 0.3},
+        "happy": {"name": "happy", "weight": 0.6},
+        "angry": {"name": "angry", "weight": 0.48},
+        "laugh": {"name": "happy", "weight": 0.68},
+        "disagree": {"name": "neutral", "weight": 0},
+        "shrug": {"name": "relaxed", "weight": 0.3},
+        "speaking": {
+          "name": "happy",
+          "weight": 0.24
         }
       }
-    }
+    },
+    "cues": [
+      {"name": "angry", "phrases": ["我有点生气", "我真的生气了", "哼，", "哼！"], "exclude": ["不生气", "别生气", "不要生气", "没有生气"]},
+      {"name": "happy", "phrases": ["太开心了", "好开心", "太棒了", "真为你高兴", "恭喜你", "太好了"], "exclude": ["不太好", "别太开心"]},
+      {"name": "laugh", "phrases": ["哈哈哈", "笑死我了", "逗笑我了"]},
+      {"name": "greet", "phrases": ["你好呀", "回来啦", "很高兴见到你"]}
+    ]
   },
   "expression": {
     "name": "neutral",
     "weight": 0
   },
   "credit": "AvatarSample A · VRoid Project / pixiv Inc.",
-  "version": "avatar-sample-a-vrma-2"
+  "version": "avatar-sample-a-vrma-11"
 }

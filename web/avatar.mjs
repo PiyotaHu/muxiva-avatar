@@ -9,9 +9,9 @@ import {VrmAnimationController} from './avatar-animation.mjs';
 
 /** Local VRM presentation runtime. The Graph owns media and turns; this owns pixels only. */
 export class AvatarRenderer {
-  constructor(canvas,{pixelRatio=1.25,framing='portrait',framePadding=1.13,mouthScale=.8,animation={},face={}}={}){
+  constructor(canvas,{pixelRatio=1.25,framing='portrait',framePadding=1.13,mouthScale=.8,animation={},face={},cues=[]}={}){
     this.canvas=canvas;this.options={pixelRatio,framing,framePadding,mouthScale,animation,face};this.viewYaw=0;
-    this.timeline=new AvatarTimeline();this.lipSync=new LipSyncTimeline();this.stateMachine=new AvatarStateMachine();
+    this.timeline=new AvatarTimeline();this.lipSync=new LipSyncTimeline();this.stateMachine=new AvatarStateMachine({cues});this.lastCueToken=null;
     this.scene=new THREE.Scene();this.camera=new THREE.PerspectiveCamera(32,1,.01,100);this.renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});
     this.renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio||1,pixelRatio));this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.setClearColor(0,0);
     this.scene.add(new THREE.HemisphereLight(0xffffff,0xa9a0c9,1.35));const key=new THREE.DirectionalLight(0xfff5ed,1.5);key.position.set(-1,2,3);this.scene.add(key);
@@ -25,7 +25,8 @@ export class AvatarRenderer {
     if(!candidate){VRMUtils.deepDispose(gltf.scene);throw Error('Selected asset is not a VRM avatar');}
     if(generation!==this.loadGeneration||this.disposed){VRMUtils.deepDispose(candidate.scene);return null;}
     VRMUtils.rotateVRM0(candidate);VRMUtils.removeUnnecessaryVertices(candidate.scene);VRMUtils.combineSkeletons(candidate.scene);candidate.scene.traverse(object=>{object.frustumCulled=false;});
-    this.face??=new AvatarFaceController({mouthScale:this.options.mouthScale,emotions:this.options.face?.emotions||{}});this.body??=new VrmAnimationController(this.options.animation||{});this._releaseAvatar();this.vrm=candidate;this.lookAtOriginal=candidate.lookAt?{yaw:candidate.lookAt.yaw,pitch:candidate.lookAt.pitch,autoUpdate:candidate.lookAt.autoUpdate,target:candidate.lookAt.target}:null;this.meta=candidate.meta;this.scene.add(candidate.scene);this.face.bind(candidate);
+    this.face??=new AvatarFaceController({mouthScale:this.options.mouthScale,emotions:this.options.face?.emotions||{}});this.body??=new VrmAnimationController(this.options.animation||{});this._releaseAvatar();this.vrm=candidate;this.lookAtOriginal=candidate.lookAt?{yaw:candidate.lookAt.yaw,pitch:candidate.lookAt.pitch,autoUpdate:candidate.lookAt.autoUpdate,target:candidate.lookAt.target}:null;this.meta=candidate.meta;this.scene.add(candidate.scene);const missingExpressions=this.face.bind(candidate);
+    if(missingExpressions.length){this._releaseAvatar();throw Error('角色模型缺少面部表情：'+missingExpressions.join(', '));}
     try{await this.body.bind(candidate);}catch(error){this._releaseAvatar();throw Error('角色动作加载失败：'+error.message);}
     if(this.stats)this.stats.animationLoadErrors=this.body.loadErrors.size;
     if(generation!==this.loadGeneration||this.disposed){this._releaseAvatar();return null;}
@@ -38,15 +39,37 @@ export class AvatarRenderer {
   setActivity(activity='idle'){this.activity=['idle','listening','thinking','speaking'].includes(activity)?activity:'idle';}
   queue(event){try{const accepted=this.timeline.queue(event);if(accepted&&event.topic==='muxiva.avatar.reset'){const payload=typeof event.payload==='string'?JSON.parse(event.payload):event.payload;this.lipSync.reset({streamId:payload.stream_id,beforeSequence:payload.before_sequence});}if(accepted)this.stats.acceptedAnimationEvents++;return accepted;}catch{return false;}}
   queueAudio(frame){return this.lipSync.queue(frame);}
-  reset({streamId='assistant',beforeSequence}={}){if(beforeSequence===undefined){this.timeline.clear();this.lipSync.reset();this.stateMachine.reset();}else{this.timeline.reset({streamId,beforeSequence});this.lipSync.reset({streamId,beforeSequence});}this.face.reset();this.body.reset();}
+  queueText(frame){return this.stateMachine.queueText(frame);}
+  interact(kind='greet'){
+    if(!this.vrm||!Object.hasOwn(this.body.gestures,kind)||this.body.reducedMotion)return false;
+    if(!this.body.triggerGesture(kind))return false;
+    this.stateMachine.react(kind,Math.min(7,this.body.cache.get(this.body.state)?.duration||4));
+    this.lastCueToken='interaction:'+this.stateMachine.reaction.token;return true;
+  }
+  setReducedMotion(value){this.body.setReducedMotion(value);this.stateMachine.reaction=null;}
+  reset({streamId='assistant',beforeSequence}={}){if(beforeSequence===undefined){this.timeline.clear();this.lipSync.reset();}else{this.timeline.reset({streamId,beforeSequence});this.lipSync.reset({streamId,beforeSequence});}this.stateMachine.reset({streamId,beforeSequence});this.lastCueToken=null;this.face.reset();this.body.reset();}
   setExpression(name='neutral',weight=.25){if(typeof name!=='string'||!/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(name)||!Number.isFinite(weight))return false;if(name!=='neutral'&&this.vrm&&!this.vrm.expressionManager?.getExpression(name))return false;this.manualExpression={name,weight:Math.max(0,Math.min(1,weight))};this.expression=this.manualExpression;return true;}
   update({deltaSeconds=1/60,streamId='assistant',sequence,sampleOffset=0,sampleRateHz=24000,playing=false}={}){
-    if(this.disposed)return;const wallDelta=Math.max(0,Number.isFinite(deltaSeconds)?deltaSeconds:0),dt=Math.min(.1,wallDelta);this.elapsed+=dt;const activity=this.stateMachine.update({playing,thinking:this.activity==='thinking',userSpeaking:this.activity==='listening'});this.body.setActivity(activity);this.body.update(dt);
-    const visemes=this.lipSync.sample({streamId,sequence,sampleOffset,playing})||this._legacyVisemes({streamId,sequence,sampleOffset,sampleRateHz,playing});this.face.update({deltaSeconds:dt,activity,visemes,playing});this.mouth=this.face.mouthOpen;this._updateGaze(dt,activity);this.vrm?.update(dt);this.renderer.render(this.scene,this.camera);
+    if(this.disposed)return;const wallDelta=Math.max(0,Number.isFinite(deltaSeconds)?deltaSeconds:0),dt=Math.min(.1,wallDelta);this.elapsed+=dt;const activity=this.stateMachine.update({playing,thinking:this.activity==='thinking',userSpeaking:this.activity==='listening',deltaSeconds:dt});this.body.setActivity(activity);
+    const cue=this.stateMachine.presentation({playing,streamId,sequence});
+    if(cue&&cue.token!==this.lastCueToken){this.body.triggerGesture(cue.gesture);this.lastCueToken=cue.token;}
+    this.body.update(dt);
+    const visemes=this.lipSync.sample({streamId,sequence,sampleOffset,playing})||this._legacyVisemes({streamId,sequence,sampleOffset,sampleRateHz,playing});this.face.update({deltaSeconds:dt,activity,emotion:cue?.emotion,manualExpression:this.manualExpression,visemes,playing});this.mouth=this.face.mouthOpen;this._updateGaze(dt,activity);this.vrm?.update(dt);this.renderer.render(this.scene,this.camera);
+    this.stats.bodyClip=this.body.state;this.stats.emotion=cue?.emotion||'neutral';this.stats.activeGesture=this.body.activeGesture?.name||null;
     this.stats.frames++;this.stats.seconds+=wallDelta;this.fpsFrames=(this.fpsFrames||0)+1;this.fpsSeconds=(this.fpsSeconds||0)+wallDelta;if(this.fpsSeconds>=1){this.stats.fps=this.fpsFrames/this.fpsSeconds;this.fpsFrames=0;this.fpsSeconds=0;}this.stats.droppedAnimationFrames=this.timeline.dropped+this.lipSync.dropped;this.stats.mouthOpen=this.mouth;this.stats.peakMouthOpen=Math.max(this.stats.peakMouthOpen,this.mouth);this.stats.bodyState=activity;
   }
   _legacyVisemes({streamId,sequence,sampleOffset,sampleRateHz,playing}){const open=this.timeline.sample({streamId,sequence,sampleOffset,sampleRateHz,playing})*this.options.mouthScale;return {aa:open,ih:0,ou:0,ee:0,oh:0};}
-  _updateGaze(dt,activity){if(!this.vrm?.lookAt||!this.lookAtOriginal)return;const look=this.vrm.lookAt;look.autoUpdate=false;const amount=activity==='listening'?1:.55,period=activity==='thinking'?3.4:6.3,phase=this.elapsed%period,glance=phase>period-.9?Math.sin((phase-(period-.9))/.9*Math.PI)**2:0,cycle=Math.floor(this.elapsed/period),blend=1-Math.exp(-dt/.12);look.yaw=THREE.MathUtils.lerp(look.yaw,(cycle%2?-1:1)*18*glance*amount,blend);look.pitch=THREE.MathUtils.lerp(look.pitch,(activity==='thinking'?-10:-5)*glance*amount,blend);}
+  _updateGaze(){
+    if(!this.vrm?.lookAt||!this.lookAtOriginal)return;
+    // LookAt reads raw matrixWorld without refreshing it. Sync only the head's
+    // ancestry now, so a mixer seek / pose change cannot leave gaze one frame late.
+    this.vrm.humanoid?.update();
+    this.vrm.humanoid?.getRawBoneNode('head')?.updateWorldMatrix(true,false);
+    // VRM.update applies the target through the model's own eye range maps.
+    // Head-local zero angles are not eye contact when the animation raises the chin.
+    this.vrm.lookAt.target=this.camera;
+    this.vrm.lookAt.autoUpdate=true;
+  }
   _releaseAvatar(){this.face?.unbind();this.body?.dispose();if(!this.vrm)return;if(this.vrm.lookAt&&this.lookAtOriginal)Object.assign(this.vrm.lookAt,this.lookAtOriginal);this.lookAtOriginal=null;this.scene.remove(this.vrm.scene);VRMUtils.deepDispose(this.vrm.scene);this.vrm=null;}
   dispose(){if(this.disposed)return;this.disposed=true;++this.loadGeneration;this._releaseAvatar();this.resizeObserver?.disconnect();this.renderer?.dispose();}
 }

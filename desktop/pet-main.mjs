@@ -26,6 +26,11 @@ function buildPetMenu(state) {
     nativeAction(model.connect),
     nativeAction(model.microphone),
     nativeAction(model.disconnect),
+    { label: '互动动作', submenu: [
+      { label: '打个招呼', click: () => sendPetCommand('react-greet') },
+      { label: '开心', click: () => sendPetCommand('react-happy') },
+      { label: '小生气', click: () => sendPetCommand('react-angry') }
+    ] },
     { type: 'separator' },
     { label: '关闭数字人', click: () => app.quit() }
   ]);

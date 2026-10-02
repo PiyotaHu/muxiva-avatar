@@ -1,7 +1,7 @@
 import {AvatarRenderer} from './avatar.mjs';
 import {IllustrationRenderer} from './illustration.mjs';
 import {LocalAudio} from './audio.mjs';
-import {validateCharacterConfig,resolveCharacterConfigUrl} from './character-config.mjs';
+import {validateCharacterConfig,resolveCharacterConfigUrl,applyIdleAnimationPreview} from './character-config.mjs';
 import {createExperienceMetrics} from './experience-metrics.mjs';
 import {describeExperience} from './experience-view.mjs';
 const $=id=>document.getElementById(id);
@@ -132,13 +132,15 @@ function error(message){
 try{
   const response=await fetch(resolveCharacterConfigUrl(window.location.search),{cache:'no-store'});
   if(!response.ok)throw Error('角色配置读取失败（HTTP '+response.status+'）');
-  character=validateCharacterConfig(await response.json());
+  character=applyIdleAnimationPreview(
+    validateCharacterConfig(await response.json()),window.location.search);
   if(character.renderer.type==='illustration'&&motionPreference?.matches)
     character.renderer.motion={...character.renderer.motion,reducedMotion:true};
   avatar=character.renderer.type==='illustration'
     ?new IllustrationRenderer($('avatar'),character.renderer)
     :new AvatarRenderer($('avatar'),character.renderer);
   const model=await avatar.load(character.asset);
+  if(character.renderer.type==='vrm')avatar.setReducedMotion?.(Boolean(motionPreference?.matches));
   if(!model)throw Error('角色资源加载已取消');
   if(!avatar.setExpression(character.expression.name,character.expression.weight))throw Error('角色模型缺少配置中的表情：'+character.expression.name);
   applyView(0,character.renderer.framing);characterControls(true);
@@ -225,6 +227,10 @@ desktopPetApi?.onCommand?.(command=>{
   else if(command==='enable-microphone')enableDesktopPetMicrophone();
   else if(command==='mute-microphone')muteDesktopPetMicrophone();
   else if(command==='disconnect')stopDesktopPetVoice();
+  else if(command==='react-happy'||command==='react-angry'||command==='react-greet'){
+    const accepted=avatar?.interact?.(command.slice(6));
+    if(!accepted)showDesktopPetFeedback('动作尚未就绪，或上一个动作正在播放');
+  }
 });
 const releaseAttention=()=>avatar?.setPointer?.({x:.5,y:.5,active:false});
 function avatarPointer(event){
@@ -238,9 +244,10 @@ function avatarPointer(event){
     y:Math.max(0,Math.min(1,(event.clientY-rect.top)/rect.height)),active:true});
 }
 function refreshInteractionControls(){
-  const supported=typeof avatar?.interact==='function'&&Boolean(avatar?.asset);
+  const supported=typeof avatar?.interact==='function'&&Boolean(avatar?.asset||avatar?.vrm);
   for(const id of ['avatarGreet','avatarAcknowledge'])if($(id))$(id).disabled=!supported;
   if($('interactionHint'))$('interactionHint').hidden=!supported;
+  if($('avatarReaction'))$('avatarReaction').disabled=!supported;
 }
 avatarViewport?.addEventListener('pointermove',avatarPointer,{passive:true});
 avatarViewport?.addEventListener('pointerleave',releaseAttention);
@@ -254,6 +261,12 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseAtte
 motionPreference?.addEventListener?.('change',event=>avatar?.setReducedMotion?.(event.matches));
 if($('avatarGreet'))$('avatarGreet').onclick=()=>avatar?.interact?.('greet');
 if($('avatarAcknowledge'))$('avatarAcknowledge').onclick=()=>avatar?.interact?.('acknowledge');
+if($('avatarReaction'))$('avatarReaction').onchange=event=>{
+  const kind=event.target.value;if(!kind)return;
+  if(!avatar?.interact?.(kind)){$('avatarStatus').hidden=false;$('avatarStatus').textContent='请等当前动作结束后再试；减少动态效果模式下不播放手势。';}
+  else $('avatarStatus').hidden=true;
+  event.target.value='';
+};
 refreshInteractionControls();
 if(avatar?.stats.layerCount>0)avatar.interact?.('greet');
 let previous=performance.now(),diagnosticAt=0;
@@ -275,6 +288,8 @@ function render(now){
     if(Number.isFinite(avatar.stats.gazeX))diagnostic['视线跟随']=avatar.stats.gazeX.toFixed(2)+' / '+avatar.stats.gazeY.toFixed(2);
     if(Number.isFinite(avatar.stats.headTilt))diagnostic['头部侧倾']=avatar.stats.headTilt.toFixed(2);
     if(typeof avatar.stats.bodyState==='string')diagnostic['数字人状态']=avatar.stats.bodyState;
+    if(avatar.stats.bodyClip)diagnostic['当前动作']=avatar.stats.bodyClip;
+    if(avatar.stats.emotion)diagnostic['当前表情']=avatar.stats.emotion;
     showDiagnostics();
   }
   requestAnimationFrame(render);
@@ -379,6 +394,7 @@ $('connect').onclick=async()=>{
           if(message.channel==='preview_in')$('preview').textContent='听到：'+message.text;
           else if(message.channel==='transcript_in'){addMessage('user',message.text);$('preview').textContent='';}
           else {
+            if(responseText)avatar?.queueText?.({streamId:'assistant',sequence:message.sequence,text:message.text});
             if(!assistantMessage||lastSequence!==message.sequence){assistantMessage=addMessage('assistant','');lastSequence=message.sequence;}
             assistantMessage.textContent+=message.text;$('messages').scrollTop=$('messages').scrollHeight;
           }
@@ -423,7 +439,8 @@ function disconnectVoiceSession(){const socket=ws;send({type:'close'});endLocalS
 $('disconnect').onclick=disconnectVoiceSession;
 window.addEventListener('beforeunload',()=>{send({type:'close'});audio?.close();pendingAvatar?.dispose();avatar?.dispose();});
 // Explicit read-only diagnostics surface for local acceptance tests.
-window.avatarDiagnostics=()=>({ready,position:audio?.position,renderer:diagnostic['GPU'],fps:avatar?.stats.fps,model:avatar?.meta?.name,experience:experience.snapshot(),
+window.avatarDiagnostics=()=>({ready,position:audio?.position,renderer:diagnostic['GPU'],fps:avatar?.stats.fps,model:avatar?.meta?.name||avatar?.meta?.title,experience:experience.snapshot(),
   character:character?{name:character.name,version:character.version,asset:character.asset}:null,view:{yaw:viewYaw,framing:viewFraming},
   animation:avatar?.stats.mouthOpen===undefined?null:{mouthOpen:avatar.stats.mouthOpen,peakMouthOpen:avatar.stats.peakMouthOpen,
-    acceptedAnimationEvents:avatar.stats.acceptedAnimationEvents,leftHand:avatar.stats.leftHand,rightHand:avatar.stats.rightHand}});
+    acceptedAnimationEvents:avatar.stats.acceptedAnimationEvents,leftHand:avatar.stats.leftHand,rightHand:avatar.stats.rightHand,
+    bodyClip:avatar.stats.bodyClip,emotion:avatar.stats.emotion,activeGesture:avatar.stats.activeGesture,animationLoadErrors:avatar.stats.animationLoadErrors}});

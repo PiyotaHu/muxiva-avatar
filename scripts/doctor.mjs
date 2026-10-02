@@ -17,6 +17,10 @@ const checks={
  modelConfigured:!!(process.env.MUXIVA_MODEL_BASE_URL&&process.env.MUXIVA_MODEL_ID&&(process.env.MUXIVA_MODEL_API_KEY||process.env.MUXIVA_MODEL_AUTH_MODE==='none'))
 };
 if(checks.python){const result=spawnSync(python,['-c','import sherpa_onnx, websockets, soxr; print(sherpa_onnx.__version__)'],{encoding:'utf8',windowsHide:true});checks.sherpa=result.status===0?result.stdout.trim():'IMPORT FAILED';}
+if(checks.python){
+ const config=JSON.parse(readFileSync(join(root,'graph.json'),'utf8')).nodes.find(node=>node.id==='local-tts')?.node_config?.voice_effect;
+ if(config){const result=spawnSync(python,['-c','import json,sys; from muxiva_avatar_speech.voice_effect import VoiceEffect; VoiceEffect(json.loads(sys.argv[1])).prepare()',JSON.stringify(config)],{cwd:root,env:{...process.env,PYTHONPATH:join(root,'python')},encoding:'utf8',windowsHide:true,timeout:15000});checks.voiceEffect=result.status===0;if(!checks.voiceEffect)console.error(result.stderr||'Voice effect dependency check failed');}
+}
 if(checks.muxiva){const result=spawnSync(binary,['validate',join(root,'graph.json')],{cwd:root,env:{...process.env,MUXIVA_PYTHON:python,MUXIVA_NODE:process.execPath},encoding:'utf8',windowsHide:true});checks.graph=result.status===0; if(!checks.graph)console.error(result.stderr);}
 console.log(JSON.stringify(checks,null,2));
 if(!checks.modelConfigured)console.log('Model credentials are not printed. Configure .env before a real LLM conversation.');

@@ -175,6 +175,7 @@ async function harness({initialType='illustration',withMatchMedia=true,reducedMo
     IllustrationRenderer:FakeIllustrationRenderer,
     LocalAudio:FakeAudio,createExperienceMetrics,describeExperience,
     validateCharacterConfig:value=>value,resolveCharacterConfigUrl:()=>'/character-test.json',
+    applyIdleAnimationPreview:value=>value,
     fetch:async (url,options)=>{
       requests.push({url,options});
       if(url==='/character-test.json')return {ok:true,json:async()=>config};

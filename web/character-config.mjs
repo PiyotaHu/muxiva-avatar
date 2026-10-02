@@ -23,6 +23,27 @@ export function resolveCharacterConfigUrl(search='') {
   return '/assets/avatar/'+names[0]+'.json';
 }
 
+const IDLE_PREVIEWS = Object.freeze({
+  original: '/assets/avatar/animations/rocketbox-idle.vrma',
+  '2': '/assets/avatar/animations/rocketbox-idle-2.vrma',
+  '3': '/assets/avatar/animations/rocketbox-idle-3.vrma',
+  '4': '/assets/avatar/animations/rocketbox-idle-4.vrma'
+});
+
+/** Local presentation-only override; it never becomes an arbitrary asset path. */
+export function applyIdleAnimationPreview(character,search='') {
+  const values=new URLSearchParams(search).getAll('idlePreview');
+  if(values.length===0)return character;
+  if(values.length!==1||!Object.hasOwn(IDLE_PREVIEWS,values[0]))throw Error('待机动作预览参数无效');
+  if(character?.renderer?.type!=='vrm'||!character.renderer.animation?.clips)throw Error('待机动作预览仅支持 VRM 角色');
+  const copy=structuredClone(character);
+  copy.renderer.animation.clips.idle=IDLE_PREVIEWS[values[0]];
+  copy.version+=` · idle-${values[0]}`;
+  return copy;
+}
+
+export const idleAnimationPreviews=()=>({...IDLE_PREVIEWS});
+
 /** Local application asset configuration; no model or character policy in the renderer. */
 export function validateCharacterConfig(value) {
   const source=record(value,'角色配置');
@@ -32,7 +53,7 @@ export function validateCharacterConfig(value) {
   renderer.type=renderer.type===undefined?'vrm':renderer.type;
   if(!['vrm','illustration'].includes(renderer.type))throw Error('renderer.type 必须为 vrm 或 illustration');
   known(renderer,renderer.type==='vrm'
-    ?['type','framing','pixelRatio','framePadding','mouthExpression','mouthScale','motion','animation','face']
+    ?['type','framing','pixelRatio','framePadding','mouthExpression','mouthScale','motion','animation','face','cues']
     :['type','framing','pixelRatio','framePadding','mouthScale','motion'],'renderer');
   const asset=text(source.asset,'角色资源地址');
   if(renderer.type==='illustration') {
@@ -50,7 +71,7 @@ export function validateCharacterConfig(value) {
   if(renderer.mouthExpression!==undefined&&(typeof renderer.mouthExpression!=='string'||!/^[A-Za-z][A-Za-z0-9_-]*$/.test(renderer.mouthExpression)))throw Error('mouthExpression 无效');
   if(renderer.animation!==undefined) {
     renderer.animation={...record(renderer.animation,'animation')};
-    known(renderer.animation,['clips','states','transitionSeconds','restPoseProfile'],'animation');
+    known(renderer.animation,['clips','states','variants','gestures','variantIntervalSeconds','gestureCooldownSeconds','transitionSeconds','restPoseProfile','poseOffsets'],'animation');
     const clips={...record(renderer.animation.clips,'animation.clips')};renderer.animation.clips=clips;
     for(const [name,url] of Object.entries(clips)) {
       if(!/^[a-z][A-Za-z0-9_-]{0,63}$/.test(name)||typeof url!=='string'||!/^\/assets\/avatar\/[A-Za-z0-9][A-Za-z0-9._/-]*\.vrma$/i.test(url)||url.includes('..'))throw Error('animation 动作资源无效');
@@ -60,17 +81,44 @@ export function validateCharacterConfig(value) {
       if(!['idle','listening','thinking','speaking'].includes(state)||typeof name!=='string'||!Object.hasOwn(clips,name))throw Error('animation 状态映射无效');
     }
     if(renderer.animation.transitionSeconds!==undefined)number(renderer.animation.transitionSeconds,'animation.transitionSeconds',.05,3);
+    for(const [field,min,max] of [['variantIntervalSeconds',4,30],['gestureCooldownSeconds',1,15]])
+      if(renderer.animation[field]!==undefined)number(renderer.animation[field],field,min,max);
+    for(const field of ['variants','gestures'])if(renderer.animation[field]!==undefined){
+      renderer.animation[field]=Object.fromEntries(Object.entries(record(renderer.animation[field],field)).map(([key,value])=>{
+        const names=Array.isArray(value)?[...value]:[value];
+        if(!/^[a-z][A-Za-z0-9_-]{0,63}$/.test(key)||!names.length||names.length>8||names.some(name=>typeof name!=='string'||!Object.hasOwn(clips,name)))throw Error(field+' 动作映射无效');
+        if(field==='variants'&&!['idle','listening','thinking','speaking'].includes(key))throw Error('variants 状态无效');
+        return [key,names];
+      }));
+    }
     if(renderer.animation.restPoseProfile!==undefined&&!['relaxedHands'].includes(renderer.animation.restPoseProfile))throw Error('animation.restPoseProfile 无效');
+    if(renderer.animation.poseOffsets!==undefined) {
+      renderer.animation.poseOffsets=Object.fromEntries(Object.entries(record(renderer.animation.poseOffsets,'animation.poseOffsets')).map(([bone,angles])=>{
+        if(!/^[a-z][A-Za-z0-9]*$/.test(bone)||!Array.isArray(angles)||angles.length!==3)throw Error('animation.poseOffsets 骨骼或旋转无效');
+        return [bone,angles.map(angle=>number(angle,'animation.poseOffsets 旋转',-.35,.35))];
+      }));
+    }
   }
   if(renderer.face!==undefined) {
     renderer.face={...record(renderer.face,'face')};known(renderer.face,['emotions'],'face');
     const emotions=Object.fromEntries(Object.entries(record(renderer.face.emotions,'face.emotions')).map(([state,profile])=>[state,{...record(profile,'face 情绪')}]));renderer.face.emotions=emotions;
     for(const [state,profile] of Object.entries(emotions)) {
-      if(!['idle','listening','thinking','speaking'].includes(state))throw Error('face 情绪状态无效');
+      if(!/^[a-z][A-Za-z0-9_-]{0,63}$/.test(state))throw Error('face 情绪状态无效');
       const value=record(profile,'face 情绪');known(value,['name','weight'],'face 情绪');
       if(typeof value.name!=='string'||!/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(value.name))throw Error('face 情绪名称无效');number(value.weight,'face 情绪权重',0,1);
     }
-  }  if(renderer.motion!==undefined) {
+  }
+  if(renderer.cues!==undefined){
+    if(!Array.isArray(renderer.cues)||renderer.cues.length>16)throw Error('cues 必须为最多16项的列表');
+    renderer.cues=renderer.cues.map(cue=>{
+      record(cue,'cue');known(cue,['name','phrases','exclude'],'cue');
+      if(!Object.hasOwn(renderer.animation?.gestures||{},cue.name)||!Object.hasOwn(renderer.face?.emotions||{},cue.name))throw Error('cue 需要对应动作和表情');
+      const strings=(values,label)=>{if(!Array.isArray(values)||values.length>24)throw Error(label+' 无效');return values.map(value=>text(value,label,60));};
+      const phrases=strings(cue.phrases,'cue.phrases');if(!phrases.length)throw Error('cue.phrases 不能为空');
+      return {name:cue.name,phrases,exclude:strings(cue.exclude||[],'cue.exclude')};
+    });
+  }
+  if(renderer.motion!==undefined) {
     renderer.motion={...record(renderer.motion,'motion')};
     const motion=renderer.motion;
     known(motion,['enabled','breathingAmount','idleAmount','speechAmount','gestureAmount','fingerAmount','gazeAmount','expressionAmount','headYawAmount','headTiltAmount','hipSwayAmount','attentionAmount','activityAmount','interactionAmount','reducedMotion','attackSeconds','releaseSeconds','gestureDelaySeconds','gesturePauseSeconds','gestureAttackSeconds','gestureHoldSeconds','gestureReleaseSeconds','restPose'],'motion');

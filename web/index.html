@@ -39,6 +39,7 @@
             <div class="gesture-controls">
               <button id="avatarGreet" type="button" disabled>打个招呼</button>
               <button id="avatarAcknowledge" type="button" disabled>点头回应</button>
+              <select id="avatarReaction" aria-label="情绪动作预览" disabled><option value="">情绪动作…</option><option value="happy">开心</option><option value="angry">小生气</option><option value="laugh">笑起来</option><option value="disagree">摇摇头</option><option value="shrug">摊手</option></select>
             </div>
           </div>
           <p id="avatarStatus" class="character-status" role="alert" hidden></p>
@@ -84,7 +85,7 @@
         <summary>角色与互动设置</summary>
         <div class="detail-content">
           <p id="avatarDescription">正在读取本地角色配置</p>
-          <p id="interactionHint" hidden>移动鼠标，她会看向你；轻触角色，会向你回应。也可以使用“打个招呼”和“点头回应”按钮。互动不需要连接会话。</p>
+          <p id="interactionHint" hidden>轻触角色打招呼，也可以点头或预览开心、小生气等动作，不需要连接会话。说话时会轮换手势；明显的情绪措辞可触发表情和短动作。</p>
           <label class="model-button" for="modelFile">更换本地 VRM <input id="modelFile" type="file" accept=".vrm"></label>
           <p id="avatarCredit" class="character-credit"></p>
         </div>

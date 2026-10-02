@@ -31,7 +31,7 @@ test('only the selected local AvatarSample A profile remains selectable',()=>{
 test('default points to the installed AvatarSample A asset',()=>{
   const selected=validateCharacterConfig(selectedConfig);
   assert.equal(selected.asset,'/assets/avatar/AvatarSample_A.vrm');
-  assert.equal(selected.version,'avatar-sample-a-vrma-2');
+  assert.equal(selected.version,'avatar-sample-a-vrma-11');
   assert.equal(selected.renderer.framing,'portrait');
 });
 test('current VRM character keeps generic renderer options independent of source JSON',()=>{
@@ -42,7 +42,7 @@ test('current VRM character keeps generic renderer options independent of source
   assert.equal(value.renderer.type,'vrm');
   assert.deepEqual(value.expression,{name:'neutral',weight:0});
   value.renderer.animation.clips.idle='/assets/avatar/animations/changed.vrma';
-  assert.equal(config.renderer.animation.clips.idle,'/assets/avatar/animations/rocketbox-idle.vrma','validation must return independent options');
+  assert.equal(config.renderer.animation.clips.idle,'/assets/avatar/animations/avatar-sample-a-idle-refined.vrma','validation must return independent options');
 });
 
 test('illustration is an explicit renderer type with a local manifest and independent options',()=>{
@@ -79,13 +79,28 @@ test('current VRM keeps front framing and configured VRMA presentation data',asy
   const candidate=validateCharacterConfig(config);
   assert.equal(candidate.asset,'/assets/avatar/AvatarSample_A.vrm');
   assert.equal(candidate.renderer.framePadding,1.08);
-  assert.equal(candidate.renderer.animation.clips.idle,'/assets/avatar/animations/rocketbox-idle.vrma');
+  assert.equal(candidate.renderer.animation.clips.idle,'/assets/avatar/animations/avatar-sample-a-idle-refined.vrma');
   assert.equal(candidate.renderer.animation.states.listening,'listening');
   assert.equal(candidate.renderer.animation.states.thinking,'thinking');
   assert.equal(candidate.renderer.animation.states.speaking,'speaking');
+  assert.equal(candidate.renderer.mouthScale,1.2);
+  assert.equal(candidate.renderer.face.emotions.idle.name,'happy');
+  assert.equal(candidate.renderer.face.emotions.speaking.weight,.24);
+  assert.equal(candidate.renderer.animation.poseOffsets.leftUpperArm,undefined);
+  assert.equal(candidate.renderer.animation.poseOffsets.rightUpperArm,undefined);
+  assert.equal(candidate.renderer.animation.poseOffsets.leftLowerArm,undefined);
+  assert.equal(candidate.renderer.animation.poseOffsets.rightLowerArm,undefined);
+  assert.equal(candidate.renderer.animation.poseOffsets.leftHand,undefined);
+  assert.equal(candidate.renderer.animation.poseOffsets.rightHand,undefined);
+  assert.equal(candidate.renderer.animation.poseOffsets.leftIndexIntermediate,undefined);
+  assert.equal(candidate.renderer.animation.poseOffsets.leftLittleIntermediate,undefined);
+  assert.equal(candidate.renderer.animation.poseOffsets.rightIndexIntermediate,undefined);
+  assert.equal(candidate.renderer.animation.poseOffsets.rightLittleIntermediate,undefined);
   for(const value of [0,1,1.51,Infinity])assert.throws(()=>validateCharacterConfig({...candidate,renderer:{...candidate.renderer,framePadding:value}}));
   const unsafeAnimation=structuredClone(candidate);unsafeAnimation.renderer.animation.clips.idle='https://example.test/a.vrma';
   assert.throws(()=>validateCharacterConfig(unsafeAnimation));
+  const unsafePose=structuredClone(candidate);unsafePose.renderer.animation.poseOffsets.leftUpperArm=[0,0,.36];
+  assert.throws(()=>validateCharacterConfig(unsafePose),/poseOffsets/);
   const html=await readFile(new URL('../web/index.html',import.meta.url),'utf8');
   assert.ok(html.includes('正面展示'));
   assert.ok(!html.includes('>左侧<')&&!html.includes('>右侧<')&&!html.includes('>背面<'));

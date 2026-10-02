@@ -4,6 +4,32 @@
   "rule": "Use one animation family per character; do not mix base stances.",
   "files": [
     {
+      "file": "avatar-sample-a-idle-refined.vrma",
+      "derived_from": "avatar-sample-a-idle.vrma",
+      "source_file": "vrma/rb-idle.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "bd021e9df2078c892b860ea53220f45b4b51bf95be71cd5bbe14e43dad0484dd",
+      "bytes": 304864,
+      "modifications": "Offline normalized-space finger relaxation (30 finger bones) and a 6-degree head pitch correction using avatar-sample-a-idle-refinement.json. All other tracks, including user-authored arms/wrists, and every keyframe timestamp remain unchanged. Rebuild with scripts/refine-vrma-pose.mjs; original user export retained. 2026-10-01."
+    },
+    {
+      "file": "avatar-sample-a-idle.vrma",
+      "derived_from": "rocketbox-idle.vrma",
+      "source_file": "vrma/rb-idle.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "c9873105c08254910b688cb9063c6e846b3d9c275d278dbf65d7065ac567f4f4",
+      "bytes": 305020,
+      "modifications": "User-authored AvatarSample A pose adjustment recovered at frame 211, applied as local rotation deltas to 10 bones throughout frames 1-250 at 24 fps. Exported with Blender 5.2.1 and VRM add-on 4.7.2 on 2026-10-01. Original body motion is preserved; no runtime pose offsets are needed."
+    },
+    {
       "file": "rocketbox-idle.vrma",
       "source_file": "vrma/rb-idle.vrma",
       "source_repository": "https://github.com/Undi95/Hanami",
@@ -46,6 +72,160 @@
       "license": "MIT",
       "sha256": "3b1c1155dfac93d4d4d3a44deecc17420cd191cbec9b68e795f19bc6d05e0e6e",
       "bytes": 294652
+    },
+    {
+      "file": "rocketbox-idle-2.vrma",
+      "source_file": "vrma/rb-idle-2.vrma",
+      "sha256": "5953a8e63b44c9942afc0525c9d7392545a542f316e131506dfbe8c754ae9d97",
+      "bytes": 399324,
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT"
+    },
+    {
+      "file": "rocketbox-idle-3.vrma",
+      "source_file": "vrma/rb-idle-3.vrma",
+      "sha256": "f4f64086153281c69c69ca4af2153f1bb152218e81a375cb7f0a657ad746db90",
+      "bytes": 443644,
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT"
+    },
+    {
+      "file": "rocketbox-idle-4.vrma",
+      "source_file": "vrma/rb-idle-4.vrma",
+      "sha256": "e29edcf18fb76508ce0c0945cb0da4275c018fd8b96cbad69b266a14f44742f3",
+      "bytes": 486116,
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT"
+    },
+    {
+      "file": "rb-idle-talking-2.vrma",
+      "source_file": "vrma/rb-idle-talking-2.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "ae3e14b916060653c00a7938a69a7578c9dcaafb88bbb725d5d697a16542f0a6",
+      "bytes": 248492
+    },
+    {
+      "file": "rb-idle-talking-3.vrma",
+      "source_file": "vrma/rb-idle-talking-3.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "888fdf85e40ddb6c328b267e8ff9bd4e1003543f6c4adc4c22545241ef11b40c",
+      "bytes": 268236
+    },
+    {
+      "file": "rb-nod.vrma",
+      "source_file": "vrma/rb-nod.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "1c73e142305ae33e356a185145c3bf482d8fcda5057f632e60dd5ecda3b8c726",
+      "bytes": 107528
+    },
+    {
+      "file": "rb-nod-2.vrma",
+      "source_file": "vrma/rb-nod-2.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "7cac053d27467ce6a218e733aa67639448c5d473953ef37177ab5fe2dabd994f",
+      "bytes": 110708
+    },
+    {
+      "file": "rb-shake.vrma",
+      "source_file": "vrma/rb-shake.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "8b08c9fb483f75d177d2b498c377bf99ebc58b2d1d102d794006ba5bf1edfed5",
+      "bytes": 143512
+    },
+    {
+      "file": "rb-wave.vrma",
+      "source_file": "vrma/rb-wave.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "8bd33d84e90c0243987924c2f27d826f0b3343cfa8d1607a4e2f0bb9ce8af643",
+      "bytes": 218660
+    },
+    {
+      "file": "rb-happy.vrma",
+      "source_file": "vrma/rb-happy.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "93e298c38da0b1f2558eb4304a06938eebca79d8a22f60c80f663252d12583a5",
+      "bytes": 143420
+    },
+    {
+      "file": "rb-happy-2.vrma",
+      "source_file": "vrma/rb-happy-2.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "f55bc85aba425ee16c7d0a1396b8516193a61577feee8cf0397d918f3a3072e2",
+      "bytes": 254500
+    },
+    {
+      "file": "rb-angry-2.vrma",
+      "source_file": "vrma/rb-angry-2.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "8ef031a59e75e0429cd4445b0ed40c1c2f1975bf5ef18ec905f2eb53e2318c47",
+      "bytes": 155256
+    },
+    {
+      "file": "rb-laugh.vrma",
+      "source_file": "vrma/rb-laugh.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "b0aa4d11ad72dbfb9d117aa62904bc617d5bc0d384ff731562e7843d190adc2d",
+      "bytes": 232520
+    },
+    {
+      "file": "rb-shrug.vrma",
+      "source_file": "vrma/rb-shrug.vrma",
+      "source_repository": "https://github.com/Undi95/Hanami",
+      "source_commit": "6787685c8d40e4e79bffbb0d389b478f32ef88d6",
+      "upstream_repository": "https://github.com/microsoft/Microsoft-Rocketbox",
+      "upstream_commit": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+      "license": "MIT",
+      "sha256": "40db0f7c6d61200136c3a48f77d8cede1557cc62e468f5aca46cbd80e1da5f47",
+      "bytes": 101228
     }
   ]
 }

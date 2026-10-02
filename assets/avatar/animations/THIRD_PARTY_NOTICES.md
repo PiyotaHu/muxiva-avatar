@@ -1,7 +1,28 @@
 # Third-party motion notices
 
-The four `rocketbox-*.vrma` files in this directory were selected from the
-Rocketbox family converted by Hanami. The applicable upstream notice is preserved below.
+Conversation expansion (2026-10-02): the bundled `rb-idle-talking-[2-3]`,
+`rb-nod`, `rb-nod-2`, `rb-shake`, `rb-wave`, `rb-happy`, `rb-happy-2`,
+`rb-angry-2`, `rb-laugh`, and `rb-shrug` VRMA files are unmodified clips from
+the same pinned Hanami / Microsoft Rocketbox MIT family documented below.
+`scripts/setup-conversation-motions.mjs` verifies their Git blob identities;
+`sources.json` records byte sizes and SHA-256 hashes. User-edited idle assets
+are not overwritten. These assets are not copied from AIRI or Super Agent Party.
+
+`avatar-sample-a-idle.vrma` is a locally edited derivative of
+`rocketbox-idle.vrma`. On 2026-10-01, the user's AvatarSample A arm/hand pose
+adjustments were baked over the idle animation in Blender. Its upstream source
+and MIT notice are the same as the original Rocketbox idle below. File hashes
+and the modification record are in `sources.json`; the original idle is retained.
+
+`avatar-sample-a-idle-refined.vrma` derives from that user export. On 2026-10-01,
+30 finger-bone rotations were relaxed and head pitch was lowered by 6 degrees
+through the offline `refine-vrma-pose.mjs` authoring tool and the accompanying
+`avatar-sample-a-idle-refinement.json` profile. Other animation tracks and timing
+are preserved. The same upstream MIT notice below applies.
+
+The production clips and three `rocketbox-idle-[2-4].vrma` comparison clips in
+this directory were selected from the Rocketbox family converted by Hanami.
+The applicable upstream notice is preserved below.
 
 ## 4. Microsoft Rocketbox — MIT License
 

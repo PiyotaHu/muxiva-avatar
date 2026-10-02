@@ -30,13 +30,32 @@
 
 打开 [本机语聊页面](http://127.0.0.1:4174/)，默认加载 `assets/avatar/AvatarSample_A.vrm`，由 `assets/avatar/character.json` 选择。旧角色的 query 预览入口已关闭。角色文件、取景、表情和动作强度属于应用配置，不进入 Muxiva core、Agent 或 TTS。
 
-浏览器使用 Three.js + three-vrm 渲染真实3D模型。身体由同一Rocketbox家族的四个VRMA片段驱动：待机、倾听、思考、说话各自独立并交叉淡入。已有VAD事件只切换倾听展示态，Agent生命周期只切换思考态，真实PCM开始消费后才进入说话态。口型由浏览器对实际播放PCM做五元音近似分析，表情、眨眼、视线和身体分层合成；它不是中文音素模型。Electron桌宠加载完全相同的页面和Avatar Runtime，不复制动作或对话逻辑。
+当前默认待机使用 `avatar-sample-a-idle-refined.vrma`：保留用户在 Blender 调好的手臂/手腕，手指和头部修正在离线资产中完成，不叠加第二套运行时骨骼驱动。维护角色动作时，可用 `?idlePreview=original`、`?idlePreview=2`、`?idlePreview=3`、`?idlePreview=4` 对比同一 Rocketbox 家族的四套待机动作。该参数只替换浏览器表现层的待机 VRMA，不改变 Graph、Agent、Voice Turn 或其他会话状态。
+
+浏览器使用 Three.js + three-vrm 渲染真实3D模型。身体由同一 Rocketbox 家族的 VRMA 驱动：四种会话状态各自独立，三种说话动作每约7秒轮换，另有招手、点头、摇头、开心、轻微生气、笑和摊手短动作，交叉淡入后自动回落。已有 VAD 事件只切换倾听展示态，Agent 生命周期只切换思考态，真实 PCM 开始消费后才进入说话态。口型由浏览器对实际播放 PCM 做五元音近似分析，表情、眨眼、视线和身体分层合成；它不是中文音素模型。Electron 桌宠加载完全相同的页面和 Avatar Runtime，不复制动作或对话逻辑。
+
+### 情绪动作（v11）
+
+网页角色下方的“情绪动作…”可预览开心、小生气、笑、摇头和摊手；“打个招呼”“点头回应”也支持 VRM。桌宠右键菜单有“互动动作”，桌宠保持透明无常驻面板。更新原生菜单后需关闭并重新打开桌宠。
+
+- `renderer.animation.variants`：会话状态的动作池；`gestures`：语义名称到短动作的映射。素材只有身体轨道能进入混合器，不接管口型和视线。动作冷却、减少动态效果和停止已淡出动作均在前端实现。
+- `renderer.face.emotions`：表情名称及强度；开心、生气使用不同表情，而不是永远使用同一微笑。音频静止时嘴巴关闭，表情不伪造语音。
+- `renderer.cues`：只对助手输出做有界的本地短语匹配；匹配结果等相同 sequence 的音频真正播放才呈现，打断后旧 sequence 不可复活。没有增加模型请求、修改 Agent 提示词或新增 Muxiva Node。
+- 这是保守的句子/回答级规则，不是完整语义情绪识别，也不是逐词精确动作对齐。否定、引用、反讽和隐含情绪仍可能漏判或误判，不能声称已经具备真人情绪理解。没有匹配时仍有正常说话动作轮换。
+
+参考 [AIRI 表情驱动](https://github.com/moeru-ai/airi/blob/main/packages/stage-ui-three/src/composables/vrm/expression.ts) 对情绪、眨眼、口型所有权的划分，以及 [Super Agent Party 的 VRM 实现](https://github.com/heshengtao/super-agent-party/blob/main/static/js/vrm.js) 的短动作/队列和语音分段表情思想；没有复制其业务服务或把展示逻辑放进通用 Agent。动作素材沿用本项目已有的 Hanami/Rocketbox MIT 家族，来源、固定提交与校验值见 `assets/avatar/animations/sources.json`。
+
+`node scripts/setup-conversation-motions.mjs` 可重新获取校验过的新增动作；它不会覆盖内容不匹配的已有文件。`node tests/e2e.mjs --serve --performance` 启动独立4180固定回复夹具，再运行 `node scripts/verify-avatar-performance.mjs` 检查真实本地 TTS/AudioWorklet → 表情、说话变体和取消。此脚本使用独立 Chromium 配置和静音输出，不访问个人浏览器、不启用麦克风、不调用云模型。截图和报告位于 `.artifacts/performance-v11/`。测试覆盖桌宠共用页面与菜单映射，但不替代实际 Electron 右键菜单的人工验收。
 
 通用 `IllustrationRenderer` 代码仍存在，但当前 Graph 不使用它，也不安装旧立绘资产。角色替换没有新增聊天循环或 turn 语义。
 
 此前旧角色的验收记录仅是历史记录，不代表 AvatarSample A 已完成浏览器目视或长时间实机验收。
 
-**当前 TTS 是 Matcha Baker。** Qwen3-TTS 只完成下载、校验和隔离环境准备；用户要求暂不运行，因此未切换生产。详见 [Qwen 准备状态](docs/qwen-tts-local-setup.zh-CN.md)。
+**当前 TTS 是 Matcha Baker 轻度调音版（+2 半音、速度 1.04 倍）。** `graph.json` 的 `local-tts.node_config.voice_effect` 控制本地 Rubber Band 音高/速度处理；删除该配置即可恢复原声。不改变模型 `speed`，不使用浏览器 `playbackRate`，网页和桌宠共享调音后的 24 kHz PCM、样本时钟和口型输入。
+
+调音需要带 `rubberband` 滤镜的 FFmpeg：加入 PATH，或设置 `MUXIVA_FFMPEG` / `voice_effect.ffmpeg` 指向可执行文件。依赖缺失会明确报错，不会静默改回原声。每个 formatter 片段使用连续流处理，沿用有界队列、取消代次和时间戳；取消/关闭时回收所属 FFmpeg 子进程。试听文件的离线响度归一化不用于实时路径，以免增加等待时间，故实时音量可能与试听略有差异。音色仍来自单说话人 Matcha，调音不等于情感 TTS。
+
+Qwen3-TTS 只完成下载、校验和隔离环境准备；用户要求暂不运行，因此未切换生产。详见 [Qwen 准备状态](docs/qwen-tts-local-setup.zh-CN.md)。
 
 ## 安装与复现
 

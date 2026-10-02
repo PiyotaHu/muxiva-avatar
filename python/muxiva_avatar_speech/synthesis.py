@@ -17,6 +17,7 @@ from typing import Any
 
 import muxiva
 from .speech_text import normalize_for_speech
+from .voice_effect import VoiceEffect
 
 
 class LocalTtsNode:
@@ -38,6 +39,7 @@ class LocalTtsNode:
         self.offset_sequence = None
         self.sample_offset = 0
         self.np = None
+        self.voice_effect = VoiceEffect(self.config.get("voice_effect"))
 
     def _load_model(self):
         import sherpa_onnx
@@ -116,6 +118,21 @@ class LocalTtsNode:
         if self.startup_error is not None:
             raise RuntimeError(f"Local TTS initialization failed: {self.startup_error}")
 
+    def _generate(self, model, text, callback):
+        default_speaker = 0 if self.config.get("backend") in {"melo", "matcha"} else 3
+        sid = int(self.config.get("speaker_id", default_speaker))
+        speed = float(self.config.get("speed", 1.0))
+        if "silence_scale" in self.config:
+            # Sherpa's legacy overload creates GenerationConfig(silence_scale=.2),
+            # overriding OfflineTtsConfig. Honor the explicit node setting at
+            # generation time too, as in the user's selected local audition.
+            from sherpa_onnx import GenerationConfig
+            generation = GenerationConfig()
+            generation.sid, generation.speed = sid, speed
+            generation.silence_scale = float(self.config["silence_scale"])
+            return model.generate(text, generation, callback=callback)
+        return model.generate(text, sid=sid, speed=speed, callback=callback)
+
     def on_process(self, frame, ctx):
         if frame is not None:
             if not hasattr(frame, "text"):
@@ -171,8 +188,8 @@ class LocalTtsNode:
         with self.lock:
             return not self.closing.is_set() and generation == self.generation
 
-    def _put(self, generation, sequence, kind, value):
-        while self._active(generation):
+    def _put(self, generation, sequence, kind, value, active=None):
+        while self._active(generation) and (active is None or active()):
             try:
                 self.results.put((generation, sequence, kind, value), timeout=0.05)
                 return True
@@ -182,6 +199,7 @@ class LocalTtsNode:
 
     def _work(self):
         try:
+            self.voice_effect.prepare()
             # stdout is reserved for the Muxiva JSON host protocol.
             with redirect_stdout(sys.stderr):
                 model = self.model_factory() if self.model_factory else self._load_model()
@@ -207,43 +225,56 @@ class LocalTtsNode:
             emitted = False
             callback_seen = False
             count = 0
-            resampler = soxr.ResampleStream(native_rate, self.SAMPLE_RATE, 1, dtype="float32", quality="HQ") if native_rate != self.SAMPLE_RATE else None
+            effect = None
+            resampler = soxr.ResampleStream(native_rate, self.SAMPLE_RATE, 1, dtype="float32", quality="HQ") if native_rate != self.SAMPLE_RATE and not self.voice_effect.enabled else None
             def audio_callback(samples, _progress):
                 nonlocal callback_seen
                 callback_seen = True
+                if effect is not None:
+                    return effect.write(samples)
                 if resampler is not None:
                     samples = resampler.resample_chunk(self.np.asarray(samples, dtype=self.np.float32), last=False)
                 return emit_samples(samples)
             def emit_samples(samples):
                 nonlocal emitted, count
-                if not self._active(generation):
+                active = lambda: self._active(generation) and (effect is None or effect.active())
+                if not active():
                     return 0
                 samples = self.np.asarray(samples, dtype=self.np.float32).reshape(-1)
                 if not len(samples):
                     return 1
                 if not emitted:
-                    if not self._put(generation, sequence, "started", {"first_pcm_ms": round((time.perf_counter() - started) * 1000, 1)}):
+                    metadata = {"first_pcm_ms": round((time.perf_counter() - started) * 1000, 1)}
+                    if self.voice_effect.enabled:
+                        metadata["voice_effect"] = self.voice_effect.settings
+                    if not self._put(generation, sequence, "started", metadata, active=active):
                         return 0
                     emitted = True
                 chunk_samples = self.SAMPLE_RATE * int(self.config.get("pcm_chunk_ms", 40)) // 1000
                 for offset in range(0, len(samples), chunk_samples):
                     chunk = samples[offset:offset + chunk_samples]
                     pcm = (self.np.clip(chunk, -1, 1) * 32767).astype("<i2").tobytes()
-                    if not self._put(generation, sequence, "audio", pcm):
+                    if not self._put(generation, sequence, "audio", pcm, active=active):
                         return 0
                     count += len(chunk)
                 return 1
             try:
-                default_speaker = 0 if self.config.get("backend") in {"melo", "matcha"} else 3
-                audio = model.generate(text, sid=int(self.config.get("speaker_id", default_speaker)), speed=float(self.config.get("speed", 1.0)), callback=audio_callback)
+                if self.voice_effect.enabled:
+                    effect = self.voice_effect.stream(native_rate, self.SAMPLE_RATE, emit_samples, lambda: self._active(generation))
+                audio = self._generate(model, text, audio_callback)
                 # Test adapters and older Sherpa APIs may return without callbacks.
                 if not callback_seen and self._active(generation):
                     audio_callback(audio.samples, 1.0)
+                if effect is not None:
+                    effect.finish()
                 if resampler is not None and self._active(generation):
                     emit_samples(resampler.resample_chunk(self.np.empty(0, dtype=self.np.float32), last=True))
                 self._put(generation, sequence, "done", {"samples": count, "synthesis_ms": round((time.perf_counter() - started) * 1000, 1)})
             except Exception as error:
                 self._put(generation, sequence, "error", str(error))
+            finally:
+                if effect is not None:
+                    effect.close()
 
     def _drain(self, ctx):
         # <= 8 * 40 ms audio per callback keeps the host response bounded.

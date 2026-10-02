@@ -43,6 +43,17 @@ test('a missing optional state clip falls back to the loaded idle without a seco
   assert.equal(controller.setActivity('listening'),false);
   controller.dispose();
 });
+test('per-character pose offsets are baked into animation tracks without a second rig writer',()=>{
+  const bone=new THREE.Object3D();bone.name='Normalized_LeftUpperArm';
+  const clip=new THREE.AnimationClip('idle',1,[new THREE.QuaternionKeyframeTrack(
+    bone.name+'.quaternion',[0,1],[0,0,0,1,0,0,0,1])]);
+  const controller=new VrmAnimationController({poseOffsets:{leftUpperArm:[0,0,-.025]}});
+  controller._applyPoseOffsets(clip,{humanoid:{getNormalizedBoneNode:name=>name==='leftUpperArm'?bone:null}});
+  const track=clip.tracks[0],first=new THREE.Quaternion().fromArray(track.values,0);
+  const second=new THREE.Quaternion().fromArray(track.values,4),angle=new THREE.Euler().setFromQuaternion(first,'XYZ').z;
+  assert.ok(Math.abs(angle+.025)<1e-6);
+  assert.ok(first.angleTo(second)<1e-3,'every keyframe receives the same bounded correction');
+});
 test('all configured VRMA clips parse, retarget and animate the installed AvatarSample A rig',async t=>{
   const modelLoader=new GLTFLoader();
   modelLoader.register(parser=>new VRMLoaderPlugin(parser));
@@ -54,16 +65,16 @@ test('all configured VRMA clips parse, retarget and animate the installed Avatar
   t.after(()=>VRMUtils.deepDispose(vrm.scene));
 
   const durations=new Map();
-  for(const state of states){
+  for(const state of Object.keys(animation.clips)){
     const animationLoader=new GLTFLoader();
     animationLoader.register(parser=>new VRMAnimationLoaderPlugin(parser));
-    const source=await animationLoader.parseAsync(bytes(localPath(animation.clips[animation.states[state]])),'');
+    const source=await animationLoader.parseAsync(bytes(localPath(animation.clips[state])),'');
     const portable=source.userData.vrmAnimations?.[0];
     assert.ok(portable,`${state} contains VRMC_vrm_animation data`);
     assert.ok(portable.humanoidTracks.rotation.has('leftIndexProximal'),`${state} carries authored finger motion`);
     assert.ok(portable.humanoidTracks.rotation.has('rightIndexProximal'),`${state} carries authored finger motion`);
     const clip=createVRMAnimationClip(portable,vrm);
-    assert.ok(clip.duration>2,`${state} has a meaningful duration`);
+    assert.ok(clip.duration>1.5,`${state} has a meaningful duration`);
     assert.ok(clip.tracks.length>=20,`${state} drives a humanoid body`);
     for(const track of clip.tracks)assert.ok(Array.from(track.values).every(Number.isFinite),`${state}: ${track.name}`);
     durations.set(state,clip.duration);

@@ -147,6 +147,13 @@ def build_config(sherpa, args):
             vocoder=require_file(args.vocoder), tokens=require_file(directory / "tokens.txt"),
             lexicon=require_file(directory / "lexicon.txt"), data_dir=str(directory / "espeak-ng-data"),
             feat_scale=.1, t_shift=.5, target_rms=.1, guidance_scale=1.0)
+    elif args.backend == "vits":
+        options["vits"] = sherpa.OfflineTtsVitsModelConfig(
+            model=require_file(args.acoustic_model),
+            lexicon=require_file(directory / "lexicon.txt"),
+            tokens=require_file(directory / "tokens.txt"),
+            dict_dir=str(directory / "dict"),
+        )
     else:
         options["matcha"] = sherpa.OfflineTtsMatchaModelConfig(
             acoustic_model=require_file(args.acoustic_model), vocoder=require_file(args.vocoder),
@@ -383,10 +390,10 @@ def run_guarded(args, *, memory=None):
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--backend", choices=["zipvoice-int8", "matcha", "kokoro"], required=True)
+    parser.add_argument("--backend", choices=["zipvoice-int8", "matcha", "kokoro", "vits"], required=True)
     parser.add_argument("--model-dir", type=Path, required=True)
     parser.add_argument("--vocoder", type=Path)
-    parser.add_argument("--acoustic-model", type=Path, help="Matcha ONNX; diffusion steps are baked into this file")
+    parser.add_argument("--acoustic-model", type=Path, help="Matcha acoustic ONNX or VITS ONNX; Matcha diffusion steps are baked into the file")
     parser.add_argument("--encoder", type=Path)
     parser.add_argument("--decoder", type=Path)
     parser.add_argument("--reference-audio", type=Path)
@@ -422,10 +429,12 @@ def parse_args(argv=None):
         parser.error("Case timeout must be <=60 seconds; load timeout <=120 seconds")
     if args.speaker_id is not None and args.speaker_id < 0:
         parser.error("--speaker-id must be nonnegative")
-    if args.backend != "kokoro" and args.vocoder is None:
+    if args.backend in {"zipvoice-int8", "matcha"} and args.vocoder is None:
         parser.error("--vocoder is required for Matcha and ZipVoice")
     if args.backend == "matcha" and args.acoustic_model is None:
         parser.error("Matcha requires an explicit --acoustic-model")
+    if args.backend == "vits" and args.acoustic_model is None:
+        parser.error("VITS requires an explicit --acoustic-model")
     if args.backend == "zipvoice-int8" and (args.reference_audio is None or not args.reference_text or not args.reference_text.strip()):
         parser.error("ZipVoice requires authorized --reference-audio and its exact --reference-text")
     if args.reference_text and len(args.reference_text) > 300:
